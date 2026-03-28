@@ -2,13 +2,13 @@ import useColorPalette from "@/hooks/useColorPalette";
 import { Colors } from "@/theme/theme";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function Settings() {
+export default function History() {
     const colors = useColorPalette()
     const styles = getStyles(colors)
 
     return (
         <View style={styles.View}>
-            <Text style={styles.Text}>Settings Page</Text>
+            <Text style={styles.Text}>History Page</Text>
         </View>
     );
 }

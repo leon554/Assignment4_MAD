@@ -1,24 +1,38 @@
+import useColorPalette from '@/hooks/useColorPalette';
+import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-export default function teamformation() {
+export default function Teamformation() {
     const router = useRouter();
+    const colors = useColorPalette()
+    const styles = getStyles(colors)
 
     return (
         <View style={styles.View}>
-        <Text>Team Formation Page</Text>
-        <Button 
-            title="Go to home screen" 
-            onPress={() => router.replace('/(tabs)')} 
-        />
+            <Text style={styles.Text}>Team Formation Page</Text>
+            <Button 
+                title="Go to team formation" 
+                onPress={() => router.push('/(tabs)')} 
+            />
         </View>
     )
 }
-const styles = StyleSheet.create({
+const getStyles = (colors: Colors) => StyleSheet.create({
     View: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: colors.background,
+        gap: 50
+    },
+    Text: {
+        color: colors.textOnPrimary,
+        padding: 10,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        backgroundColor: colors.primary,
+        fontSize: 20
     }
 })
