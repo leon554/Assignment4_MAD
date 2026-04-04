@@ -39,7 +39,7 @@ export default function Login() {
         }
         return valid;
     };
-
+// simulating a login delay, when real authentication added later this will be replaced with API call
     const handleLogin = () => {
         if (!validate()) return;
         setLoading(true);
@@ -98,6 +98,7 @@ export default function Login() {
 
                     <TouchableOpacity
                         style={styles.forgotRow}
+                        // placeholder for forgot password functionality, will be implemented in future iteration
                         onPress={() => {}}
                         accessibilityRole="button"
                     >
