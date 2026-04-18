@@ -2,13 +2,34 @@ import Button from "@/components/Button";
 import { useUser } from "@/context/UserContext";
 import { auth } from "@/FirebaseConfig";
 import useColorPalette from "@/hooks/useColorPalette";
+import { leaveTeam } from "@/services/teamService";
 import { Colors } from "@/theme/theme";
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Settings() {
     const colors = useColorPalette()
     const styles = getStyles(colors)
-    const {member, team} = useUser()
+    const {member, team, refreshMember} = useUser()
+    const [loading, setLoading] = useState(false)
+
+    const leaveTeamFunc = async () => {
+        if(!member?.teamId) {
+            alert("You are allready not in a team")
+            return
+        }
+
+        setLoading(true)
+        const {success, message} = await leaveTeam(member!.uid, member!.teamId)
+
+        if(success){
+            await refreshMember()
+            alert("Successfully left team")
+        }else{
+            alert(message)
+        }
+        setLoading(false)
+    }
 
     return (
         <>
@@ -19,6 +40,11 @@ export default function Settings() {
                 <Button
                     label="Sign Out"
                     onPress={() => auth.signOut()}
+                />
+                <Button
+                    label="Leave Team"
+                    onPress={() => leaveTeamFunc()}
+                    loading={loading}
                 />
             </View>
         </>

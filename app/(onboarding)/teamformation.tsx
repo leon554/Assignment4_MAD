@@ -70,7 +70,7 @@ export default function Teamformation() {
         }
         members.forEach((m, i) => {
             if (m.trim().length < 2) {
-                newMemberErrors[i] = 'Please enter a name';
+                newMemberErrors[i] = 'Please enter a member code';
                 valid = false;
             }
         });
@@ -88,7 +88,7 @@ export default function Teamformation() {
         if (!validate()) return;
         setLoading(true); 
 
-        const [success, error] = await createTeam({
+        const {success, message} = await createTeam({
             teamName,
             gradeLevel: Number(grade.split(" ")[1]),
             memberIds: [member!.memberCode, ...members]
@@ -97,7 +97,7 @@ export default function Teamformation() {
         await refreshMember()
         
         if(!success){
-            alert(error)
+            alert(message)
         }else{
             router.push('/(tabs)');
         }
@@ -147,7 +147,7 @@ export default function Teamformation() {
 
                     {/* team members */}
                     <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
-                        Team Member Names
+                        Team Member Codes
                     </Text>
 
                     {members.map((member, index) => (

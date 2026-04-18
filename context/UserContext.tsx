@@ -66,9 +66,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const memberData = memberSnap.data() as TeamMember;
         setMember(memberData);
 
-        if (memberData?.teamId) {
+        if(memberData?.teamId) {
             const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
             setTeam(teamSnap.data() as Team);
+        }else{
+            setTeam(null);
         }
 
         setLoading(false)
