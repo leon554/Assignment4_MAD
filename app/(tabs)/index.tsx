@@ -24,7 +24,7 @@ export default function Index() {
     );
 }
 
- const getStyles = (colors: Colors) => StyleSheet.create({
+const getStyles = (colors: Colors) => StyleSheet.create({
     View: {
         flex: 1,
         justifyContent: "center",

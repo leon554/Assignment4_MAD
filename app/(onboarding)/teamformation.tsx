@@ -1,3 +1,4 @@
+import { Dropdown } from '@/components/DropDown';
 import useColorPalette from '@/hooks/useColorPalette';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
@@ -165,62 +166,20 @@ export default function Teamformation() {
                     <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
                         Grade Level
                     </Text>
-
-                    <TouchableOpacity
-                        style={[
-                            styles.dropdown,
-                            {
-                                borderColor: gradeError ? colors.destructive : colors.border,
-                                backgroundColor: colors.surface,
-                            },
-                        ]}
-                        onPress={() => setGradeOpen(!gradeOpen)}
-                        accessibilityRole="button"
-                    >
-                        <Text style={[
-                            styles.dropdownText,
-                            { color: grade ? colors.textPrimary : colors.textDisabled },
-                        ]}>
-                            {grade || 'Select grade'}
-                        </Text>
-                        <Text style={[styles.dropdownChevron, { color: colors.textSecondary }]}>
-                            {gradeOpen ? '▲' : '▼'}
-                        </Text>
-                    </TouchableOpacity>
-
+                    
+                    <Dropdown
+                        options={GRADES}
+                        selected={grade}
+                        onSelect={setGrade}
+                    />
+                    
                     {gradeError ? (
                         <Text style={[styles.errorText, { color: colors.destructive }]}>
                             {gradeError}
                         </Text>
                     ) : null}
 
-                    {/* grade options */}
-                    {gradeOpen && (
-                        <View style={[styles.dropdownList, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-                            {GRADES.map((g) => (
-                                <TouchableOpacity
-                                    key={g}
-                                    style={[
-                                        styles.dropdownItem,
-                                        { borderBottomColor: colors.border },
-                                        grade === g && { backgroundColor: colors.primaryLight + '22' },
-                                    ]}
-                                    onPress={() => {
-                                        setGrade(g);
-                                        setGradeOpen(false);
-                                        setGradeError('');
-                                    }}
-                                >
-                                    <Text style={[
-                                        styles.dropdownItemText,
-                                        { color: grade === g ? colors.primary : colors.textPrimary },
-                                    ]}>
-                                        {g}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
+                   
 
                     {/* continue button */}
                     <View style={styles.buttonRow}>
