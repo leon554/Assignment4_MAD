@@ -1,5 +1,7 @@
 import { Dropdown } from '@/components/DropDown';
+import { useUser } from '@/context/UserContext';
 import useColorPalette from '@/hooks/useColorPalette';
+import { createTeam } from '@/services/teamService';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -27,15 +29,17 @@ export default function Teamformation() {
     const styles = getStyles(colors);
 
     const [teamName, setTeamName] = useState('');
-    const [members, setMembers] = useState(['', '', '']);
+    const [members, setMembers] = useState<string[]>([]);
     const [grade, setGrade] = useState('');
     const [gradeOpen, setGradeOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     // errors
     const [teamNameError, setTeamNameError] = useState('');
-    const [memberErrors, setMemberErrors] = useState(['', '', '']);
+    const [memberErrors, setMemberErrors] = useState<string[]>([]);
     const [gradeError, setGradeError] = useState('');
+
+    const {member, refreshMember} = useUser()
 
     // add and remove members
 
@@ -80,14 +84,24 @@ export default function Teamformation() {
 
     // submit
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (!validate()) return;
-        setLoading(true);
-        // save team data
-        setTimeout(() => {
-            setLoading(false);
+        setLoading(true); 
+
+        const [success, error] = await createTeam({
+            teamName,
+            gradeLevel: Number(grade.split(" ")[1]),
+            memberIds: [member!.memberCode, ...members]
+        })
+
+        await refreshMember()
+        
+        if(!success){
+            alert(error)
+        }else{
             router.push('/(tabs)');
-        }, 1500);
+        }
+        setLoading(false);
     };
 
     // render
@@ -139,7 +153,7 @@ export default function Teamformation() {
                     {members.map((member, index) => (
                         <TextInput
                             key={index}
-                            placeholder={`Member ${index + 1} first name`}
+                            placeholder={`Member ${index + 1} Code`}
                             value={member}
                             onChangeText={(val) => updateMember(index, val)}
                             autoCapitalize="words"

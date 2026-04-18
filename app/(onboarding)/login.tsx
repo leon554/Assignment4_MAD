@@ -1,5 +1,7 @@
+import { auth } from '@/FirebaseConfig';
 import useColorPalette from '@/hooks/useColorPalette';
 import { Colors } from '@/theme/theme';
+import { signInWithEmailAndPassword } from '@firebase/auth';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -40,13 +42,17 @@ export default function Login() {
         return valid;
     };
 // simulating a login delay, when real authentication added later this will be replaced with API call
-    const handleLogin = () => {
+    const handleLogin = async () => {
         if (!validate()) return;
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            router.push('/teamformation');
-        }, 1500);
+         
+        try {
+            await signInWithEmailAndPassword(auth, email, password)
+        } catch (error) {
+            alert(error)
+        }
+
+        setLoading(false);
     };
 
     return (
