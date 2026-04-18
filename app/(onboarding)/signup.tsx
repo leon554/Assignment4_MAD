@@ -1,6 +1,9 @@
+import { auth } from '@/FirebaseConfig';
 import useColorPalette from '@/hooks/useColorPalette';
+import { createTeamMember } from '@/services/teamMemberService';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
     KeyboardAvoidingView,
@@ -52,13 +55,21 @@ export default function Signup() {
         return valid;
     };
 
-    const handleSignup = () => {
+    const handleSignup = async () => {
         if (!validate()) return;
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            router.push('/teamformation');
-        }, 1500);
+       
+        try {
+            const user = await createUserWithEmailAndPassword(auth, email, password)
+            const uid = user.user.uid
+            const [success, error] = await createTeamMember({uid, name, teamId: ""})
+            if(!success) throw new Error(error)
+
+        } catch (error) {
+            alert(error)
+        }
+
+        setLoading(false);
     };
 
     return (
