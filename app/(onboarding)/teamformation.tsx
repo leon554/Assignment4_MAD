@@ -39,9 +39,9 @@ export default function Teamformation() {
     const [memberErrors, setMemberErrors] = useState<string[]>([]);
     const [gradeError, setGradeError] = useState('');
 
-    const {member, refreshMember} = useUser()
+    const { member, refreshMember } = useUser();
 
-    // add and remove members
+    // add, update and remove members
 
     const addMember = () => {
         if (members.length < 6) {
@@ -54,6 +54,13 @@ export default function Teamformation() {
         const updated = [...members];
         updated[index] = value;
         setMembers(updated);
+    };
+
+    const removeMember = (index: number) => {
+        const updatedMembers = members.filter((_, i) => i !== index);
+        const updatedErrors = memberErrors.filter((_, i) => i !== index);
+        setMembers(updatedMembers);
+        setMemberErrors(updatedErrors);
     };
 
     // validation
@@ -86,19 +93,19 @@ export default function Teamformation() {
 
     const handleContinue = async () => {
         if (!validate()) return;
-        setLoading(true); 
+        setLoading(true);
 
-        const {success, message} = await createTeam({
+        const { success, message } = await createTeam({
             teamName,
-            gradeLevel: Number(grade.split(" ")[1]),
-            memberIds: [member!.memberCode, ...members]
-        })
+            gradeLevel: Number(grade.split(' ')[1]),
+            memberIds: [member!.memberCode, ...members],
+        });
 
-        await refreshMember()
-        
-        if(!success){
-            alert(message)
-        }else{
+        await refreshMember();
+
+        if (!success) {
+            alert(message);
+        } else {
             router.push('/(tabs)');
         }
         setLoading(false);
@@ -116,7 +123,6 @@ export default function Teamformation() {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight + '33' }]}>
@@ -151,19 +157,30 @@ export default function Teamformation() {
                     </Text>
 
                     {members.map((member, index) => (
-                        <TextInput
-                            key={index}
-                            placeholder={`Member ${index + 1} Code`}
-                            value={member}
-                            onChangeText={(val) => updateMember(index, val)}
-                            autoCapitalize="words"
-                            variant={memberErrors[index] ? 'error' : 'default'}
-                            helperText={memberErrors[index]}
-                            colors={colors}
-                        />
+                        <View key={index} style={styles.memberRow}>
+                            <View style={styles.memberInput}>
+                                <TextInput
+                                    placeholder={`Member ${index + 1} Code`}
+                                    value={member}
+                                    onChangeText={(val) => updateMember(index, val)}
+                                    autoCapitalize="none"
+                                    variant={memberErrors[index] ? 'error' : 'default'}
+                                    helperText={memberErrors[index]}
+                                    colors={colors}
+                                />
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => removeMember(index)}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Remove member ${index + 1}`}
+                                style={[styles.removeButton, { backgroundColor: colors.destructive + '18' }]}
+                            >
+                                <Text style={[styles.removeButtonText, { color: colors.destructive }]}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
                     ))}
 
-                    {/* add a memmber */}
+                    {/* add a member */}
                     {members.length < 6 && (
                         <TouchableOpacity
                             onPress={addMember}
@@ -180,20 +197,18 @@ export default function Teamformation() {
                     <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
                         Grade Level
                     </Text>
-                    
+
                     <Dropdown
                         options={GRADES}
                         selected={grade}
                         onSelect={setGrade}
                     />
-                    
+
                     {gradeError ? (
                         <Text style={[styles.errorText, { color: colors.destructive }]}>
                             {gradeError}
                         </Text>
                     ) : null}
-
-                   
 
                     {/* continue button */}
                     <View style={styles.buttonRow}>
@@ -263,41 +278,32 @@ const getStyles = (colors: Colors) => StyleSheet.create({
         fontWeight: '500',
         marginBottom: -6,
     },
+    memberRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 8,
+    },
+    memberInput: {
+        flex: 1,
+    },
+    removeButton: {
+        width: 40,
+        height: 48,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 2,
+    },
+    removeButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
     addMemberRow: {
         marginTop: -4,
     },
     addMemberText: {
         fontSize: 14,
         fontWeight: '600',
-    },
-    dropdown: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderWidth: 1.5,
-        borderRadius: 10,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-    },
-    dropdownText: {
-        fontSize: 15,
-    },
-    dropdownChevron: {
-        fontSize: 11,
-    },
-    dropdownList: {
-        borderWidth: 1,
-        borderRadius: 10,
-        marginTop: -8,
-        overflow: 'hidden',
-    },
-    dropdownItem: {
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-    },
-    dropdownItemText: {
-        fontSize: 14,
     },
     errorText: {
         fontSize: 12,
