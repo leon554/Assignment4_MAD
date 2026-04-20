@@ -64,6 +64,7 @@ export default function Signup() {
             const uid = user.user.uid
             const [success, error] = await createTeamMember({uid, name, teamId: ""})
             if(!success) throw new Error(error)
+            router.replace('/(onboarding)/teamformation')
 
         } catch (error) {
             alert(error)

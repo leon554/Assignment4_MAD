@@ -111,6 +111,10 @@ export default function Teamformation() {
         setLoading(false);
     };
 
+    const handleJoinTeamLater = () => {
+        router.replace('/(tabs)')
+    }
+
     // render
 
     return (
@@ -213,12 +217,21 @@ export default function Teamformation() {
                     {/* continue button */}
                     <View style={styles.buttonRow}>
                         <Button
-                            label="Continue"
+                            label="Create Team"
                             variant="primary"
-                            size="lg"
+                            size="md"
                             fullWidth
                             loading={loading}
                             onPress={handleContinue}
+                            colors={colors}
+                        />
+                        <Button
+                            label="Join Team Later"
+                            variant="secondary"
+                            size="md"
+                            fullWidth
+                            loading={loading}
+                            onPress={handleJoinTeamLater}
                             colors={colors}
                         />
                     </View>
@@ -311,5 +324,7 @@ const getStyles = (colors: Colors) => StyleSheet.create({
     },
     buttonRow: {
         marginTop: 4,
+        display: "flex",
+        gap: 15
     },
 });

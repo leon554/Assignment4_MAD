@@ -1,6 +1,6 @@
 import { auth, db } from '@/FirebaseConfig';
 import { Tables, Team, TeamMember } from '@/types/dbTypes';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -27,6 +27,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [team, setTeam] = useState<Team | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter()
+    const pathName = usePathname()
+    const onboardingPaths = ["/login", "/signup"]
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -41,11 +43,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 if (memberData?.teamId) {
                     const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
                     setTeam(teamSnap.data() as Team);
-                    router.replace('/(tabs)')
-
-                }else{
-                    router.replace('/(onboarding)/teamformation')
                 }
+                if(onboardingPaths.includes(pathName)){
+                    router.replace('/(tabs)')
+                }
+                
             } else {
                 setUser(null);
                 setMember(null);
