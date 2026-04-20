@@ -48,6 +48,7 @@ export default function Login() {
          
         try {
             await signInWithEmailAndPassword(auth, email, password)
+            router.replace('/(onboarding)/teamformation')
         } catch (error) {
             alert(error)
         }

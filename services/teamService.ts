@@ -20,7 +20,7 @@ export async function createTeam(team: Omit<Team, "teamId">): Promise<{success: 
         }
 
         await setDoc(doc(db, Tables.Team, teamId), {teamId, ...team})
-        const {success, message} = await assignMembersToTeam(team.memberIds, teamId)
+        const {success, message} = await assignTeamIdToMembers(team.memberIds, teamId)
 
         if(!success) throw new Error(message)
         return {success: true}
@@ -29,7 +29,7 @@ export async function createTeam(team: Omit<Team, "teamId">): Promise<{success: 
     }
 }
 
-export async function assignMembersToTeam(memberCodes: string[], teamId: string): Promise<{success: boolean, message?: string}> {
+export async function assignTeamIdToMembers(memberCodes: string[], teamId: string): Promise<{success: boolean, message?: string}> {
     try {
         
         const q = query(
