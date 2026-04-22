@@ -2,6 +2,7 @@ import useColorPalette from '@/hooks/useColorPalette';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ACTIVITIES = [
     {
@@ -48,7 +49,7 @@ const ACTIVITIES = [
     },
 ];
 
-// tag colours
+// discipline tag colours
 
 const DISCIPLINE_COLORS: Record<string, string> = {
     Engineering: '#673AB7',
@@ -61,13 +62,14 @@ const DISCIPLINE_COLORS: Record<string, string> = {
 export default function Activities() {
     const router = useRouter();
     const colors = useColorPalette();
+    const insets = useSafeAreaInsets();
     const styles = getStyles(colors);
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-            {/* header */}
-            <View style={styles.header}>
+            {/* header with safe area top padding */}
+            <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
                 <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Activities</Text>
                 <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
                     Select an activity to begin
@@ -132,7 +134,6 @@ const getStyles = (colors: Colors) => StyleSheet.create({
     },
     header: {
         paddingHorizontal: 24,
-        paddingTop: 20,
         paddingBottom: 12,
         gap: 4,
     },
