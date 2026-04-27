@@ -1,6 +1,6 @@
 import { db } from "@/FirebaseConfig";
 import { Tables, Team, TeamMember } from "@/types/dbTypes";
-import { arrayRemove, collection, doc, getDocs, query, setDoc, where, writeBatch } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import 'react-native-get-random-values'; // must be imported first
 import { v4 as uuidv4 } from 'uuid';
 
@@ -83,16 +83,15 @@ export async function validateMemberCodes(memberCodes: string[]): Promise<{
     return { valid, invalid, alreadyAssigned };
 }
 
-export async function leaveTeam(uid: string, teamId: string): Promise<{success: boolean, message?: string}> {
+export async function leaveTeam(memberCode: string, teamId: string): Promise<{success: boolean, message?: string}> {
     try {
         const batch = writeBatch(db);
 
-        batch.update(doc(db, Tables.TeamMember, uid), {
-            teamId: ""
-        });
+        const memberRef = await getMemberRefFromCode(memberCode);
+        batch.update(memberRef, {teamId: ""})
 
         batch.update(doc(db, Tables.Team, teamId), {
-            memberIds: arrayRemove(uid)
+            memberIds: arrayRemove(memberCode)
         });
 
         await batch.commit();
@@ -101,4 +100,32 @@ export async function leaveTeam(uid: string, teamId: string): Promise<{success: 
     } catch (error) {
         return {success: false, message: (error as Error).message};
     }
+}
+
+export async function addMemberToTeam(memberCode: string, teamId: string): Promise<{ success: boolean; message?: string }> {
+    const teamRef = doc(db, 'Team', teamId);
+    const teamSnap = await getDoc(teamRef)
+
+    if (!teamSnap.exists()) return { success: false, message: 'Team not found' };
+    const memberRef = await getMemberRefFromCode(memberCode)
+
+    await Promise.all([
+        updateDoc(teamRef, { memberIds: arrayUnion(memberCode) }), 
+        updateDoc(memberRef, { teamId }),
+    ]);
+
+    return { success: true };
+}
+
+async function getMemberRefFromCode(memberCode: string){
+    const q = query(
+        collection(db, Tables.TeamMember),
+        where('memberCode', '==', memberCode)
+    );
+
+    const memberSnap = await getDocs(q);
+    if (memberSnap.empty) throw new Error('Member not found');
+
+    return memberSnap.docs[0].ref;
+
 }

@@ -28,14 +28,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter()
     const pathName = usePathname()
-    const onboardingPaths = ["/login", "/signup"]
+    const onboardingPaths = ["/login", "/signup", "/"]
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
             setLoading(true)
             if (firebaseUser) {
                 setUser(firebaseUser);
-
                 const memberSnap = await getDoc(doc(db, Tables.TeamMember, firebaseUser.uid));
                 const memberData = memberSnap.data() as TeamMember;
                 setMember(memberData);
@@ -45,7 +44,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                     setTeam(teamSnap.data() as Team);
                 }
                 if(onboardingPaths.includes(pathName)){
-                    router.replace('/(tabs)')
+                    if(memberData?.teamId){
+                        router.replace('/(tabs)')   
+                    }else{
+                        router.replace('/(onboarding)/teamformation')
+                    }
                 }
                 
             } else {

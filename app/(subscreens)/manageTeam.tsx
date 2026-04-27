@@ -1,34 +1,81 @@
 import Button from "@/components/Button";
+import InputModal from "@/components/InputModal";
 import { useUser } from "@/context/UserContext";
 import useColorPalette from "@/hooks/useColorPalette";
+import { addMemberToTeam, leaveTeam } from "@/services/teamService";
 import { Colors } from "@/theme/theme";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function manageTeam() {
     const colors = useColorPalette()
     const styles = getStyles(colors)
     const [loading, setLaoding] = useState(false)
     const router = useRouter()
+    const insets = useSafeAreaInsets();
+    const [modalVisible, setModalVisible] = useState(false);
+    const {team, refreshMember} = useUser()
+    const LoadingID = useRef("");
 
-    const {team} = useUser()
+    const addMember = async (code: string) => {
+        setLaoding(true)
 
-    const handleBack = () => {
-        router.replace("/(tabs)/settings")
+        if(!team){
+            alert("Create or join a team first before adding members")
+            setLaoding(false)
+            return;
+        }
+        const {success, message} = await addMemberToTeam(code, team!.teamId)
+
+        if(!success){
+            alert(message)
+        }else{
+            await refreshMember()
+        }
+
+        setLaoding(false);
+    }
+
+    const removeMember = async (code: string) => {
+        setLaoding(true)
+
+        const {success, message} = await leaveTeam(code, team!.teamId)
+
+        if(!success){
+            alert(message)
+        }else{
+            await refreshMember()
+        }
+
+        setLaoding(false);
     }
 
     return (
         <>
-            <View style={{ height: 50 }} /> 
+            <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/settings')}
+                    style={styles.backButton}
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
+                >
+                    <Text style={[styles.backText, { color: colors.primary }]}>‹ Back</Text>
+                </TouchableOpacity>
+                <View style={styles.headerContent}>
+                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                        Manage Team Page
+                    </Text>
+                </View>
+            </View>
             <View style={styles.View}>
-                <Text style={styles.Text}>Manage Team Page</Text>
-                <View style={{ height: 20 }} /> 
                 <Text style={styles.SubText}>Team Members</Text>
-                <View style={{maxHeight: 100, height: (team?.memberIds.length ?? 0) * 50, width: "100%"}}>
+                <View style={{ width: "100%"}}>
                     <FlatList
                         data={team?.memberIds}
                         style={{width: "100%"}}
+                        extraData={team?.memberIds}
                         keyExtractor={(item) => item}
                         contentContainerStyle={{ 
                             display: "flex",
@@ -36,7 +83,19 @@ export default function manageTeam() {
                             gap: 10
                         }}
                         renderItem={({ item }) => (
-                            <Text style={styles.TextBox}>{item}</Text>
+                            <View style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 10
+                            }}>
+                                <Text style={styles.TextBox}>{item}</Text>
+                                <Button
+                                    label="X"
+                                    size="sm"
+                                    onPress={() => {removeMember(item); LoadingID.current = item}}
+                                    loading={LoadingID.current == item ? loading : false}
+                                />
+                            </View>
                         )}
                     />
                 </View>
@@ -46,21 +105,24 @@ export default function manageTeam() {
                 <View style={styles.viewStyles}>
                     <Button
                         label="Add"
-                        onPress={() => {}}
-                        loading={loading}
+                        onPress={() => {setModalVisible(!modalVisible); LoadingID.current = "add"}}
+                        loading={LoadingID.current == "add" ? loading : false}
                         fullWidth={true}
                     />
                 </View>
             </View>
-            <View style={{padding: 30}}>
-                <Button
-                    label="Back"
-                    variant="secondary"
-                    onPress={() => handleBack()}
-                    loading={loading}
-                    fullWidth={true}
-                />
-            </View>
+
+            <InputModal
+                visible={modalVisible}
+                title="Enter Team Code"
+                placeholder="e.g. ABC123"
+                confirmLabel="Add"
+                onConfirm={(code) => {
+                    setModalVisible(false);
+                    addMember(code);
+                }}
+                onCancel={() => setModalVisible(false)}
+            />
         </>
     );
 }
@@ -91,11 +153,98 @@ export default function manageTeam() {
         borderRadius: 10,
         borderWidth: 2,
         fontSize: 16,
-        width: "100%"
+        flex: 1
     },
     viewStyles: {
         display: "flex",
         gap: 10,
         width: "100%",
-    }
+    },
+     container: {
+        flex: 1,
+    },
+    header: {
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        gap: 8,
+    },
+    backButton: {
+        alignSelf: 'flex-start',
+    },
+    backText: {
+        fontSize: 17,
+        fontWeight: '500',
+    },
+    headerContent: {
+        gap: 6,
+    },
+    headerTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+        letterSpacing: -0.3,
+    },
+    disciplineTag: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 6,
+    },
+    disciplineText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    scroll: {
+        padding: 20,
+        gap: 16,
+    },
+    section: {
+        borderRadius: 14,
+        borderWidth: 1,
+        padding: 16,
+        gap: 10,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 2,
+    },
+    bodyText: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    listRow: {
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'flex-start',
+    },
+    bullet: {
+        fontSize: 16,
+        lineHeight: 20,
+    },
+    stepBadge: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        marginTop: 1,
+    },
+    stepNumber: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    startButton: {
+        borderRadius: 14,
+        paddingVertical: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 4,
+    },
+    startButtonText: {
+        fontSize: 17,
+        fontWeight: '700',
+        letterSpacing: 0.2,
+    },
 })
