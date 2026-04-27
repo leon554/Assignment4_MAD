@@ -213,7 +213,7 @@ export default function ActivityDetail() {
             {/* header */}
             <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <TouchableOpacity
-                    onPress={() => router.back()}
+                    onPress={() => router.push('/(tabs)/activities')}
                     style={styles.backButton}
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
