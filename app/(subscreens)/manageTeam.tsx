@@ -73,9 +73,9 @@ export default function manageTeam() {
                 <Text style={styles.SubText}>Team Members</Text>
                 <View style={{ width: "100%"}}>
                     <FlatList
-                        data={team?.memberIds}
+                        data={team?.memberCodes}
                         style={{width: "100%"}}
-                        extraData={team?.memberIds}
+                        extraData={team?.memberCodes}
                         keyExtractor={(item) => item}
                         contentContainerStyle={{ 
                             display: "flex",

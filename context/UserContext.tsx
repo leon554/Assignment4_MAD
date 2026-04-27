@@ -1,4 +1,5 @@
 import { auth, db } from '@/FirebaseConfig';
+import { getMemeberFromUID } from '@/services/teamMemberService';
 import { Tables, Team, TeamMember } from '@/types/dbTypes';
 import { usePathname, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -35,8 +36,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             setLoading(true)
             if (firebaseUser) {
                 setUser(firebaseUser);
-                const memberSnap = await getDoc(doc(db, Tables.TeamMember, firebaseUser.uid));
-                const memberData = memberSnap.data() as TeamMember;
+                const memberData = await getMemeberFromUID(firebaseUser.uid)
                 setMember(memberData);
 
                 if (memberData?.teamId) {
@@ -67,8 +67,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         if (!user) return;
         setLoading(true)
 
-        const memberSnap = await getDoc(doc(db, Tables.TeamMember, user.uid));
-        const memberData = memberSnap.data() as TeamMember;
+        const memberData = await getMemeberFromUID(user.uid)
         setMember(memberData);
 
         if(memberData?.teamId) {

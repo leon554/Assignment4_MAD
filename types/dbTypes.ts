@@ -17,7 +17,7 @@ export interface Team {
     teamId: string;
     teamName: string;
     gradeLevel: number;
-    memberIds: string[];
+    memberCodes: string[];
 }
 
 export interface Activity {

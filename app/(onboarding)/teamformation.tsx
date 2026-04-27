@@ -99,7 +99,7 @@ export default function Teamformation() {
         const { success, message } = await createTeam({
             teamName,
             gradeLevel: Number(grade.split(' ')[1]),
-            memberIds: [member!.memberCode, ...members],
+            memberCodes: [member!.memberCode, ...members],
         });
 
         await refreshMember();
