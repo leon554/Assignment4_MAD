@@ -1,7 +1,7 @@
 import { db } from "@/FirebaseConfig";
 import { Tables, Team, TeamMember } from "@/types/dbTypes";
 import { arrayRemove, arrayUnion, doc, getDoc, setDoc, updateDoc, writeBatch } from "firebase/firestore";
-import 'react-native-get-random-values'; // must be imported first
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function createTeam(team: Omit<Team, "teamId">): Promise<{success: boolean, message?: string}>{
@@ -46,11 +46,7 @@ export async function assignTeamIdToMembers(memberCodes: string[], teamId: strin
     }
 }
 
-export async function validateMemberCodes(memberCodes: string[]): Promise<{
-    valid: string[];
-    invalid: string[];
-    alreadyAssigned: string[];
-}> {
+export async function validateMemberCodes(memberCodes: string[]): Promise<{valid: string[]; invalid: string[]; alreadyAssigned: string[];}> {
 
     const snap = await Promise.all(
         memberCodes.map(code => getDoc(doc(db, Tables.TeamMember, code)))

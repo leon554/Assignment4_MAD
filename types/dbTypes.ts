@@ -31,6 +31,8 @@ export interface AttemptMedia {
     mediaUrl: string;
 }
 
+export type AttemptStatus = "draft" | "submitted";
+
 export interface ActivityAttempt {
     attemptId: string;
     activityId: string;
@@ -42,4 +44,12 @@ export interface ActivityAttempt {
     rating: number;
     score: number;
     media: AttemptMedia[];
+    status: AttemptStatus;
+}
+
+export type activityAttemptData = {
+    data: Record<string, unknown>;
+    comment: string;
+    rating: number;
+    score: number;
 }
