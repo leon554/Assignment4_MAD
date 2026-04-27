@@ -4,7 +4,7 @@ import useColorPalette from '@/hooks/useColorPalette';
 import { createTeam } from '@/services/teamService';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -40,6 +40,7 @@ export default function Teamformation() {
     const [gradeError, setGradeError] = useState('');
 
     const { member, refreshMember } = useUser();
+    const loadingID = useRef(0)
 
     // add, update and remove members
 
@@ -98,7 +99,7 @@ export default function Teamformation() {
         const { success, message } = await createTeam({
             teamName,
             gradeLevel: Number(grade.split(' ')[1]),
-            memberIds: [member!.memberCode, ...members],
+            memberCodes: [member!.memberCode, ...members],
         });
 
         await refreshMember();
@@ -221,8 +222,8 @@ export default function Teamformation() {
                             variant="primary"
                             size="md"
                             fullWidth
-                            loading={loading}
-                            onPress={handleContinue}
+                            loading={loadingID.current == 1 ? loading : false}
+                            onPress={() => {handleContinue(); loadingID.current = 1}}
                             colors={colors}
                         />
                         <Button
@@ -230,8 +231,8 @@ export default function Teamformation() {
                             variant="secondary"
                             size="md"
                             fullWidth
-                            loading={loading}
-                            onPress={handleJoinTeamLater}
+                            loading={loadingID.current == 2 ? loading : false}
+                            onPress={() => {handleJoinTeamLater(); loadingID.current =2}}
                             colors={colors}
                         />
                     </View>

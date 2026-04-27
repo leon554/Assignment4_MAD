@@ -5,7 +5,7 @@ import useColorPalette from "@/hooks/useColorPalette";
 import { leaveTeam } from "@/services/teamService";
 import { Colors } from "@/theme/theme";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Settings() {
@@ -14,6 +14,7 @@ export default function Settings() {
     const {member, team, refreshMember} = useUser()
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+    const loadingID = useRef(0)
 
     const leaveTeamFunc = async () => {
         if(!member?.teamId) {
@@ -22,7 +23,7 @@ export default function Settings() {
         }
 
         setLoading(true)
-        const {success, message} = await leaveTeam(member!.uid, member!.teamId)
+        const {success, message} = await leaveTeam(member!.memberCode, member!.teamId)
 
         if(success){
             await refreshMember()
@@ -34,6 +35,10 @@ export default function Settings() {
     }
 
     const handleCreateTeam = () => {
+        if(member?.teamId){
+            alert("You are allready in a team leave your team first to create a new team");
+            return
+        }
         router.replace("/(onboarding)/teamformation")
     }
 
@@ -52,20 +57,20 @@ export default function Settings() {
                 <View style={styles.viewStyles}>
                     <Button
                         label="Leave Team"
-                        onPress={() => leaveTeamFunc()}
-                        loading={loading}
+                        onPress={() => {leaveTeamFunc(); loadingID.current = 1}}
+                        loading={loadingID.current == 1 ? loading : false}
                         fullWidth={true}
                     />
                     <Button
                         label="Create Team"
-                        onPress={() => handleCreateTeam()}
-                        loading={loading}
+                        onPress={() => {handleCreateTeam(); loadingID.current = 2}}
+                        loading={loadingID.current == 2 ? loading : false}
                         fullWidth={true}
                     />
                     <Button
                         label="Manage Team"
-                        onPress={() => handleManageTeam()}
-                        loading={loading}
+                        onPress={() => {handleManageTeam(); loadingID.current = 3}}
+                        loading={loadingID.current == 3 ? loading : false}
                         fullWidth={true}
                     />
                 </View>

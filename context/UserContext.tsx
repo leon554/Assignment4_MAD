@@ -1,4 +1,5 @@
 import { auth, db } from '@/FirebaseConfig';
+import { getMemeberFromUID } from '@/services/teamMemberService';
 import { Tables, Team, TeamMember } from '@/types/dbTypes';
 import { usePathname, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -28,16 +29,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter()
     const pathName = usePathname()
-    const onboardingPaths = ["/login", "/signup"]
+    const onboardingPaths = ["/login", "/signup", "/"]
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
             setLoading(true)
             if (firebaseUser) {
                 setUser(firebaseUser);
-
-                const memberSnap = await getDoc(doc(db, Tables.TeamMember, firebaseUser.uid));
-                const memberData = memberSnap.data() as TeamMember;
+                const memberData = await getMemeberFromUID(firebaseUser.uid)
                 setMember(memberData);
 
                 if (memberData?.teamId) {
@@ -45,7 +44,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                     setTeam(teamSnap.data() as Team);
                 }
                 if(onboardingPaths.includes(pathName)){
-                    router.replace('/(tabs)')
+                    if(memberData?.teamId){
+                        router.replace('/(tabs)')   
+                    }else{
+                        router.replace('/(onboarding)/teamformation')
+                    }
                 }
                 
             } else {
@@ -64,8 +67,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         if (!user) return;
         setLoading(true)
 
-        const memberSnap = await getDoc(doc(db, Tables.TeamMember, user.uid));
-        const memberData = memberSnap.data() as TeamMember;
+        const memberData = await getMemeberFromUID(user.uid)
         setMember(memberData);
 
         if(memberData?.teamId) {
