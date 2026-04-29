@@ -31,3 +31,10 @@ export async function getMemeberFromUID(uid: string){
 
     return memberSnap.docs[0].data() as TeamMember;
 }
+
+export async function getMembersByCodes(memberCodes: string[]): Promise<TeamMember[]> {
+    const membersRef = collection(db, Tables.TeamMember);
+    const q = query(membersRef, where("memberCode", "in", memberCodes));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => doc.data() as TeamMember);
+}
