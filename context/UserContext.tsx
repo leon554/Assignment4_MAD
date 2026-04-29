@@ -1,5 +1,5 @@
 import { auth, db } from '@/FirebaseConfig';
-import { getMemeberFromUID } from '@/services/teamMemberService';
+import { getMembersByCodes, getMemeberFromUID } from '@/services/teamMemberService';
 import { Tables, Team, TeamMember } from '@/types/dbTypes';
 import { usePathname, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -10,6 +10,7 @@ interface UserContextType {
     user: User | null;
     member: TeamMember | null;
     team: Team | null;
+    teamMembers: TeamMember[] | null
     loading: boolean;
     refreshMember: () => Promise<void>;
 }
@@ -18,6 +19,7 @@ const UserContext = createContext<UserContextType>({
     user: null,
     member: null,
     team: null,
+    teamMembers: null,
     loading: true,
     refreshMember: () => Promise.resolve()
 });
@@ -25,6 +27,7 @@ const UserContext = createContext<UserContextType>({
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [member, setMember] = useState<TeamMember | null>(null);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[] | null>(null);
     const [team, setTeam] = useState<Team | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter()
@@ -34,6 +37,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
             setLoading(true)
+
             if (firebaseUser) {
                 setUser(firebaseUser);
                 const memberData = await getMemeberFromUID(firebaseUser.uid)
@@ -41,7 +45,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
                 if (memberData?.teamId) {
                     const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
-                    setTeam(teamSnap.data() as Team);
+                    const teamData = teamSnap.data() as Team
+
+                    const teamMembersData = await getMembersByCodes(teamData.memberCodes)
+
+                    setTeam(teamData);
+                    setTeamMembers([...teamMembersData])
                 }
                 if(onboardingPaths.includes(pathName)){
                     if(memberData?.teamId){
@@ -72,7 +81,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
         if(memberData?.teamId) {
             const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
-            setTeam(teamSnap.data() as Team);
+            const teamData = teamSnap.data() as Team
+
+            const teamMembersData = await getMembersByCodes(teamData.memberCodes)
+
+            setTeam(teamData);
+            setTeamMembers([...teamMembersData])
         }else{
             setTeam(null);
         }
@@ -81,7 +95,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, member, team, loading, refreshMember}}>
+        <UserContext.Provider value={{ user, member, team, loading, refreshMember, teamMembers}}>
             {children}
         </UserContext.Provider>
     );

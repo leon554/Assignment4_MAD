@@ -1,53 +1,10 @@
+import { ACTIVITY_DATA } from '@/activityData/activityData';
 import useColorPalette from '@/hooks/useColorPalette';
 import { Colors } from '@/theme/theme';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ACTIVITIES = [
-    {
-        id: '1',
-        title: 'Parachute Drop Challenge',
-        discipline: 'Engineering',
-        description: 'Design and test a parachute for a small toy to reduce landing speed and impact force.',
-    },
-    {
-        id: '2',
-        title: 'Sound Pollution Hunter',
-        discipline: 'Science',
-        description: 'Measure and compare sound levels across different classroom activities and locations.',
-    },
-    {
-        id: '3',
-        title: 'Hand Fan Challenge',
-        discipline: 'Physics',
-        description: 'Test how air movement from different fan designs affects flexible materials.',
-    },
-    {
-        id: '4',
-        title: 'Earthquake-Resistant Structure',
-        discipline: 'Engineering',
-        description: 'Build and test structures that withstand vibration simulating earthquake conditions.',
-    },
-    {
-        id: '5',
-        title: 'Human Performance Lab',
-        discipline: 'Medical',
-        description: 'Measure speed, smoothness, and coordination during controlled stretching activities.',
-    },
-    {
-        id: '6',
-        title: 'Reaction Board Challenge',
-        discipline: 'Neuroscience',
-        description: 'Measure reaction time, coordination, and improvement through repeated digital and physical challenges.',
-    },
-    {
-        id: '7',
-        title: 'Breathing Pace Trainer',
-        discipline: 'Medical',
-        description: 'Analyse and compare breathing patterns at rest and after exercise.',
-    },
-];
 
 // discipline tag colours
 
@@ -81,7 +38,7 @@ export default function Activities() {
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
             >
-                {ACTIVITIES.map((activity) => (
+                {Object.values(ACTIVITY_DATA).map((activity) => (
                     <TouchableOpacity
                         key={activity.id}
                         style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -115,7 +72,7 @@ export default function Activities() {
                                 </View>
                             </View>
                             <Text style={[styles.description, { color: colors.textSecondary }]}>
-                                {activity.description}
+                                {activity.overview}
                             </Text>
                         </View>
 

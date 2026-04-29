@@ -73,7 +73,7 @@ export async function leaveTeam(memberCode: string, teamId: string): Promise<{su
         const batch = writeBatch(db);
 
         batch.update(doc(db, Tables.TeamMember, memberCode), { teamId: "" });
-        batch.update(doc(db, Tables.Team, teamId), { memberIds: arrayRemove(memberCode) });
+        batch.update(doc(db, Tables.Team, teamId), { memberCodes: arrayRemove(memberCode) });
 
         await batch.commit();
 
@@ -94,7 +94,7 @@ export async function addMemberToTeam(memberCode: string, teamId: string): Promi
     if (!teamMemberSnap.exists()) return { success: false, message: 'TeamMember not found' };
    
     await Promise.all([
-        updateDoc(teamRef, { memberIds: arrayUnion(memberCode) }), 
+        updateDoc(teamRef, { memberCodes: arrayUnion(memberCode) }), 
         updateDoc(teamMmberRef, { teamId }),
     ]);
 
