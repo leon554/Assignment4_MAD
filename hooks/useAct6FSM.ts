@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Act6Event, Act6State, send } from "./activity6FSM";
+import { Act6Event, Act6State, send } from "../activityData/Act6/activity6FSM";
 
 
 

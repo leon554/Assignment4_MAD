@@ -1,6 +1,6 @@
 
-import { useAct6FSM } from '@/activityData/Act6/useAct6FSM'
 import { useUser } from '@/context/UserContext'
+import { useAct6FSM } from '@/hooks/useAct6FSM'
 import React from 'react'
 import { Text, View } from 'react-native'
 import Button from '../Button'
