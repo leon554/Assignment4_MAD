@@ -1,7 +1,11 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
+import Button from '@/components/Button';
+import { useUser } from '@/context/UserContext';
 import useColorPalette from '@/hooks/useColorPalette';
+import { createEmptyAttempt } from '@/services/activityAttemptService';
 import { Colors } from '@/theme/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,6 +25,8 @@ export default function ActivityDetail() {
     const colors = useColorPalette();
     const styles = getStyles(colors);
     const insets = useSafeAreaInsets();
+    const {member, setActivityAttemptId} = useUser()
+    const [loading, setLoading] = useState(false)
 
     const activity = ACTIVITY_DATA[id ?? '1'];
 
@@ -33,6 +39,21 @@ export default function ActivityDetail() {
     }
 
     const disciplineColor = DISCIPLINE_COLORS[activity.discipline] ?? colors.primary;
+
+    const handleStartActivity = async () => {
+        setLoading(true)
+        const res = await createEmptyAttempt(id, member!.teamId, member!.memberCode)
+
+        if(!res.success){
+            alert(res.message)
+            setLoading(false)
+            return
+        }
+
+        setActivityAttemptId(res.attemptId!)
+        setLoading(false)
+        router.push(`/record/${activity.id}` as never)
+    }
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -101,15 +122,11 @@ export default function ActivityDetail() {
                 </View>
 
                 {/* start activity button */}
-                <TouchableOpacity
-                    style={[styles.startButton, { backgroundColor: colors.primary }]}
-                    onPress={() => router.push(`/record/${activity.id}` as never)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Start ${activity.title}`}
-                >
-                    <Text style={[styles.startButtonText, { color: colors.textOnPrimary }]}>Start Activity</Text>
-                </TouchableOpacity>
-
+                <Button
+                    label='Start Activity'
+                    loading={loading}
+                    onPress={() => handleStartActivity()}
+                />
             </ScrollView>
         </View>
     );

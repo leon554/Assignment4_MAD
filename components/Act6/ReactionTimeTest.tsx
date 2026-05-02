@@ -28,7 +28,7 @@ export default function ReactionTimeTest({ handleSubmit }: Props) {
                 timeout.current = setTimeout(() => {
                     startTime.current = Date.now();
                     setTestState("go");
-                }, 2000 + Math.random() * 3000);
+                }, 1000 + Math.random() * 3000);
                 break;
 
             case "ready":
