@@ -19,8 +19,8 @@ export default function ActivityDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const colors = useColorPalette();
-    const insets = useSafeAreaInsets();
     const styles = getStyles(colors);
+    const insets = useSafeAreaInsets();
 
     const activity = ACTIVITY_DATA[id ?? '1'];
 
