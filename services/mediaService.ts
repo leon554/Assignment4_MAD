@@ -1,8 +1,8 @@
-import { db } from "@/FirebaseConfig";
+import { db, storage } from "@/FirebaseConfig";
 import { AttemptMedia, Tables } from "@/types/dbTypes";
 import * as ImagePicker from "expo-image-picker";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 
 async function uriToBlob(uri: string): Promise<Blob> {
@@ -26,7 +26,6 @@ export async function captureAndUploadPhoto(attemptId: string): Promise<{ succes
         const blob = await uriToBlob(uri);
 
         const mediaId = uuidv4();
-        const storage = getStorage();
         const storageRef = ref(storage, `media/${attemptId}/${mediaId}.jpg`);
 
         await uploadBytes(storageRef, blob);
@@ -61,7 +60,6 @@ export async function captureAndUploadVideo(attemptId: string): Promise<{ succes
         const blob = await uriToBlob(uri);
 
         const mediaId = uuidv4();
-        const storage = getStorage();
         const storageRef = ref(storage, `media/${attemptId}/${mediaId}.mp4`);
 
         await uploadBytes(storageRef, blob);
