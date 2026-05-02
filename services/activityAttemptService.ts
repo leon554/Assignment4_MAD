@@ -7,7 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
  
 
 //-----Pipeline for activity attempts----
-// 1. use createEmptyAttempt to create an empty attempt which will return a attemptId
+// 1. use createEmptyAttempt to create an empty attempt which will return a attemptId which can be stored in the user
+//contex for global acces
 // 2. use submitAttempt, captureAndUploadPhoto and/or captureAndUploadVideo to add data
 //    to the attempt using the attemptId
 //--------------------------------------
@@ -89,6 +90,24 @@ export async function deleteAllAttemptMedia(attemptId: string): Promise<{ succes
         await Promise.all(files.items.map(fileRef => deleteObject(fileRef)));
 
         return { success: true };
+    } catch (error) {
+        return { success: false, message: (error as Error).message };
+    }
+}
+export async function deleteAllDraftAttempts(): Promise<{ success: boolean; deletedCount?: number; message?: string }> {
+    try {
+        const q = query(
+            collection(db, Tables.ActivityAttempts),
+            where('status', '==', 'draft')
+        );
+
+        const snap = await getDocs(q);
+
+        await Promise.all(
+            snap.docs.map(d => discardAttempt(d.id))
+        );
+
+        return { success: true, deletedCount: snap.docs.length };
     } catch (error) {
         return { success: false, message: (error as Error).message };
     }

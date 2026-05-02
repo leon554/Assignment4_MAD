@@ -1,4 +1,5 @@
 import { auth, db } from '@/FirebaseConfig';
+import { deleteAllDraftAttempts } from '@/services/activityAttemptService';
 import { getMembersByCodes, getMemeberFromUID } from '@/services/teamMemberService';
 import { Tables, Team, TeamMember } from '@/types/dbTypes';
 import { usePathname, useRouter } from 'expo-router';
@@ -13,6 +14,8 @@ interface UserContextType {
     teamMembers: TeamMember[] | null
     loading: boolean;
     refreshMember: () => Promise<void>;
+    activityAttemptId: string;
+    setActivityAttemptId: (id: string) => void
 }
 
 const UserContext = createContext<UserContextType>({
@@ -21,7 +24,9 @@ const UserContext = createContext<UserContextType>({
     team: null,
     teamMembers: null,
     loading: true,
-    refreshMember: () => Promise.resolve()
+    refreshMember: () => Promise.resolve(),
+    activityAttemptId: "",
+    setActivityAttemptId: () => null
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -33,6 +38,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter()
     const pathName = usePathname()
     const onboardingPaths = ["/login", "/signup", "/"]
+    const [activityAttemptId, setActivityAttemptId] = useState("")
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -59,6 +65,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                         router.replace('/(onboarding)/teamformation')
                     }
                 }
+                await deleteAllDraftAttempts()
                 
             } else {
                 setUser(null);
@@ -95,7 +102,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, member, team, loading, refreshMember, teamMembers}}>
+        <UserContext.Provider value={{ user, member, team, loading, refreshMember, teamMembers, activityAttemptId, setActivityAttemptId}}>
             {children}
         </UserContext.Provider>
     );

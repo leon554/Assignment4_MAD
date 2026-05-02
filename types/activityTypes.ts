@@ -10,3 +10,12 @@ export type ActivityData = Record<string, {
     instructions: string[];
     curriculumLinks: string[];
 }>
+
+export type Activity6Data = {
+    memberData: {
+        MemberCode: string,
+        DMRT: number,
+        NDMRT: number,
+        TRACC: number
+    }[]
+}
