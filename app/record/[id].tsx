@@ -1,4 +1,5 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
+import Act7Record from '@/components/Act7/Act7Record';
 import Frame from '@/components/Frame';
 import { Colors } from '@/theme/theme';
 import { useLocalSearchParams } from 'expo-router';
@@ -27,7 +28,9 @@ export default function ActivityRecord() {
                     <Act6Record/>
                 )
             case "7": 
-                return
+                return(
+                    <Act7Record/>
+                )
         }
     }
 
