@@ -1,3 +1,4 @@
+import { MovementData } from "@/activityData/FSM/activity5FSM";
 import useColorPalette from "@/hooks/useColorPalette";
 import { Colors } from "@/theme/theme";
 import * as Haptics from "expo-haptics";
@@ -27,8 +28,8 @@ const CHART_WIDTH = SCREEN_WIDTH - 80;
 const CHART_HEIGHT = 100;
 
 // Smoothness thresholds (jerk magnitude in m/s³ approx)
-const SMOOTH_THRESHOLD = 0.2;
-const MODERATE_THRESHOLD = 0.5;
+const SMOOTH_THRESHOLD = 0.4;
+const MODERATE_THRESHOLD = 0.8;
 
 // How long to wait between haptic warnings so we don't buzz constantly (ms)
 const HAPTIC_COOLDOWN_MS = 200;
@@ -156,8 +157,11 @@ const ROUND_CONFIG: Record<Round, { title: string; subtitle: string; emoji: stri
     },
 };
 
+interface Props {
+    onComplete: (data: MovementData) => void
+}
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function StretchTracker() {
+export default function StretchTracker({onComplete} : Props) {
     const colors = useColorPalette();
     const styles = getStyles(colors);
 
@@ -460,7 +464,23 @@ export default function StretchTracker() {
             <ResultScreen
                 result={result}
                 colors={colors}
-                onReset={resetSession}
+                onReset={() => {
+                    const movements= [...result!.round1.movements, ...result!.round2.movements]
+                    const avgResults = movements.reduce((a, c) => {
+                        a.avgJerk += c.avgJerk
+                        a.maxJerk += c.maxJerk
+                        a.avgSpeed += c.avgSpeed
+                        a.rangeOfMotion += c.rangeOfMotion
+                        return a
+                    })
+                    onComplete({
+                        avgJerk: avgResults.avgJerk/3,
+                        maxJerk: avgResults.maxJerk/3,
+                        avgSpeed: avgResults.avgSpeed/3,
+                        range: avgResults.rangeOfMotion/3
+                    })
+                    resetSession();
+                }}
             />
         );
     }
@@ -676,7 +696,7 @@ export default function StretchTracker() {
                                     styles.jerkBarFill,
                                     {
                                         width: jerkAnim.interpolate({
-                                            inputRange: [0, 0.5],
+                                            inputRange: [0, 0.8],
                                             outputRange: ["0%", "100%"],
                                         }),
                                         backgroundColor: jerkColor,
@@ -830,7 +850,7 @@ function ResultScreen({
             </View>
 
             <Pressable style={styles.buttonPrimary} onPress={onReset}>
-                <Text style={styles.buttonPrimaryText}>Start Over</Text>
+                <Text style={styles.buttonPrimaryText}>Continue</Text>
             </Pressable>
         </ScrollView>
     );
