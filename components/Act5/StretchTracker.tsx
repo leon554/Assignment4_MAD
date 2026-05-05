@@ -6,156 +6,31 @@ import { Accelerometer } from "expo-sensors";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     Animated,
-    Dimensions,
     Pressable,
     ScrollView,
-    StyleSheet,
     Text,
     View,
 } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
+import {
+    CHART_HEIGHT,
+    CHART_WIDTH,
+    COOLDOWN_SECONDS,
+    HAPTIC_COOLDOWN_MS,
+    JERK_SMOOTHING_ALPHA,
+    MODERATE_THRESHOLD,
+    MOVEMENT_LABELS,
+    RECORDING_SECONDS,
+    ROUND_CONFIG,
+    SAMPLE_RATE_MS,
+    WINDOW_SIZE,
+} from "./StretchTracker.constants";
+import StretchTrackerResultScreen from "./StretchTrackerResultScreen";
+import { getStyles } from "./StretchTracker.styles";
+import { MovementStepper, RoundBadge } from "./StretchTrackerPhaseViews";
+import { Movement, MovementResult, Phase, Round, RoundResult, Sample, SessionResult } from "./StretchTracker.types";
+import { buildRoundResult, computeJerk, magnitude } from "./StretchTracker.utils";
 
-
-// ─── Config ────────────────────────────────────────────────────────────────
-const SAMPLE_RATE_MS = 50;
-const WINDOW_SIZE = 200; // 10 seconds of data at 50ms
-const RECORDING_SECONDS = 10;
-const COOLDOWN_SECONDS = 3;
-const JERK_SMOOTHING_ALPHA = 0.2;
-
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const CHART_WIDTH = SCREEN_WIDTH - 80;
-const CHART_HEIGHT = 100;
-
-// Smoothness thresholds (jerk magnitude in m/s³ approx)
-const SMOOTH_THRESHOLD = 0.4;
-const MODERATE_THRESHOLD = 0.8;
-
-// How long to wait between haptic warnings so we don't buzz constantly (ms)
-const HAPTIC_COOLDOWN_MS = 200;
-
-// ─── Types ──────────────────────────────────────────────────────────────────
-interface Sample {
-    ax: number;
-    ay: number;
-    az: number;
-    magnitude: number;
-    jerk: number;
-    timestamp: number;
-}
-
-// round: which experiment round we are in
-// 1 = no feedback (baseline), 2 = haptic feedback enabled
-type Round = 1 | 2;
-type Phase = "idle" | "round_intro" | "recording" | "cooldown" | "between_rounds" | "done";
-type Movement = 1 | 2 | 3;
-
-interface MovementResult {
-    movement: Movement;
-    label: string;
-    avgSpeed: number;
-    avgJerk: number;
-    maxJerk: number;
-    rangeOfMotion: number;
-    smoothnessLabel: string;
-    smoothnessColor: string;
-}
-
-interface RoundResult {
-    round: Round;
-    movements: MovementResult[];
-    hardestMovement: Movement;
-}
-
-interface SessionResult {
-    round1: RoundResult;
-    round2: RoundResult;
-}
-
-// ─── Utilities ───────────────────────────────────────────────────────────────
-function magnitude(ax: number, ay: number, az: number): number {
-    return Math.sqrt(ax * ax + ay * ay + az * az);
-}
-
-function computeJerk(prev: number, curr: number, dt: number): number {
-    if (dt === 0) return 0;
-    return Math.abs((curr - prev) / dt);
-}
-
-function smoothnessLabel(avgJerk: number, colors: Colors): { label: string; color: string } {
-    if (avgJerk < SMOOTH_THRESHOLD) return { label: "Smooth", color: colors.positive };
-    if (avgJerk < MODERATE_THRESHOLD) return { label: "Moderate", color: colors.primary };
-    return { label: "Jerky", color: colors.destructive };
-}
-
-function computeRangeOfMotion(samples: Sample[]): number {
-    if (samples.length === 0) return 0;
-    const mags = samples.map((s) => s.magnitude);
-    return parseFloat((Math.max(...mags) - Math.min(...mags)).toFixed(3));
-}
-
-function buildResult(
-    movement: Movement,
-    label: string,
-    samples: Sample[],
-    colors: Colors
-): MovementResult {
-    if (samples.length === 0) {
-        return {
-            movement,
-            label,
-            avgSpeed: 0,
-            avgJerk: 0,
-            maxJerk: 0,
-            rangeOfMotion: 0,
-            smoothnessLabel: "No data",
-            smoothnessColor: colors.textDisabled,
-        };
-    }
-    const avgSpeed = parseFloat(
-        (samples.reduce((a, s) => a + s.magnitude, 0) / samples.length).toFixed(3)
-    );
-    const avgJerk = parseFloat(
-        (samples.reduce((a, s) => a + s.jerk, 0) / samples.length).toFixed(4)
-    );
-    const maxJerk = parseFloat(Math.max(...samples.map((s) => s.jerk)).toFixed(4));
-    const rangeOfMotion = computeRangeOfMotion(samples);
-    const { label: sLabel, color: sColor } = smoothnessLabel(avgJerk, colors);
-    return { movement, label, avgSpeed, avgJerk, maxJerk, rangeOfMotion, smoothnessLabel: sLabel, smoothnessColor: sColor };
-}
-
-function buildRoundResult(
-    round: Round,
-    buffers: Record<Movement, Sample[]>,
-    colors: Colors
-): RoundResult {
-    const movements = ([1, 2, 3] as Movement[]).map((m) =>
-        buildResult(m, MOVEMENT_LABELS[m], buffers[m], colors)
-    );
-    const hardest = movements.reduce((a, b) => (a.avgJerk > b.avgJerk ? a : b));
-    return { round, movements, hardestMovement: hardest.movement };
-}
-
-const MOVEMENT_LABELS: Record<Movement, string> = {
-    1: "Movement 1: Slow Arm Raise",
-    2: "Movement 2: Side Arm Move",
-    3: "Movement 3: Circular Arm Swing",
-};
-
-const ROUND_CONFIG: Record<Round, { title: string; subtitle: string; emoji: string; hapticEnabled: boolean }> = {
-    1: {
-        title: "Round 1: Baseline",
-        subtitle: "No feedback. Perform each stretch as smoothly as you can without any cues.",
-        emoji: "🤫",
-        hapticEnabled: false,
-    },
-    2: {
-        title: "Round 2: Haptic Feedback",
-        subtitle: "Your phone will buzz when your movement becomes too jerky. Try to minimise the buzzes.",
-        emoji: "📳",
-        hapticEnabled: true,
-    },
-};
 
 interface Props {
     onComplete: (data: MovementData) => void
@@ -461,7 +336,7 @@ export default function StretchTracker({onComplete} : Props) {
     // ─── Done screen ───────────────────────────────────────────────────────────
     if (phase === "done" && result) {
         return (
-            <ResultScreen
+            <StretchTrackerResultScreen
                 result={result}
                 colors={colors}
                 onReset={() => {
@@ -484,40 +359,6 @@ export default function StretchTracker({onComplete} : Props) {
             />
         );
     }
-
-    // ─── Movement step indicator (reused across phases) ────────────────────────
-    const MovementStepper = () => (
-        <View style={styles.movementHeader}>
-            {([1, 2, 3] as Movement[]).map((m) => (
-                <View
-                    key={m}
-                    style={[
-                        styles.movementStep,
-                        currentMovement === m && styles.movementStepActive,
-                        currentMovement > m && styles.movementStepDone,
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.movementStepText,
-                            currentMovement === m && styles.movementStepTextActive,
-                        ]}
-                    >
-                        {currentMovement > m ? "✓" : m}
-                    </Text>
-                </View>
-            ))}
-        </View>
-    );
-
-    // ─── Round badge ───────────────────────────────────────────────────────────
-    const RoundBadge = ({ r }: { r: Round }) => (
-        <View style={[styles.roundBadge, r === 2 && styles.roundBadge2]}>
-            <Text style={styles.roundBadgeText}>
-                {r === 1 ? "Round 1 — No Feedback" : "Round 2 — Haptic Feedback 📳"}
-            </Text>
-        </View>
-    );
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -568,7 +409,7 @@ export default function StretchTracker({onComplete} : Props) {
             {/* ── Round intro ── */}
             {phase === "round_intro" && (
                 <>
-                    <RoundBadge r={round} />
+                    <RoundBadge styles={styles} r={round} />
                     <View style={styles.sectionView}>
                         <Text style={styles.roundIntroEmoji}>{ROUND_CONFIG[round].emoji}</Text>
                         <Text style={styles.movementLabel}>{ROUND_CONFIG[round].title}</Text>
@@ -596,8 +437,8 @@ export default function StretchTracker({onComplete} : Props) {
             {/* ── Cooldown ── */}
             {phase === "cooldown" && (
                 <>
-                    <RoundBadge r={round} />
-                    <MovementStepper />
+                    <RoundBadge styles={styles} r={round} />
+                    <MovementStepper styles={styles} currentMovement={currentMovement} />
                     <View style={styles.sectionView}>
                         <Text style={styles.cooldownEmoji}>🧘</Text>
                         <Text style={styles.cooldownTitle}>Get Ready</Text>
@@ -617,8 +458,8 @@ export default function StretchTracker({onComplete} : Props) {
             {/* ── Recording ── */}
             {phase === "recording" && (
                 <>
-                    <RoundBadge r={round} />
-                    <MovementStepper />
+                    <RoundBadge styles={styles} r={round} />
+                    <MovementStepper styles={styles} currentMovement={currentMovement} />
 
                     <Text style={styles.movementLabel}>
                         {MOVEMENT_LABELS[currentMovement]}
@@ -744,490 +585,3 @@ export default function StretchTracker({onComplete} : Props) {
         </ScrollView>
     );
 }
-
-// ─── Results Screen ────────────────────────────────────────────────────────────
-function ResultScreen({
-    result,
-    colors,
-    onReset,
-}: {
-    result: SessionResult;
-    colors: Colors;
-    onReset: () => void;
-}) {
-    const styles = getStyles(colors);
-    const rounds: RoundResult[] = [result.round1, result.round2];
-
-    // Compare avg jerk per movement across rounds
-    const improvements = ([1, 2, 3] as Movement[]).map((m) => {
-        const r1 = result.round1.movements.find((mv) => mv.movement === m)!;
-        const r2 = result.round2.movements.find((mv) => mv.movement === m)!;
-        const delta = r1.avgJerk - r2.avgJerk;
-        return { movement: m, delta, improved: delta > 0 };
-    });
-
-    return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.titleText}>Results</Text>
-
-            {/* Comparison summary */}
-            <View style={styles.sectionView}>
-                <Text style={styles.subTitle}>Round Comparison</Text>
-                <Text style={styles.subText}>
-                    Average jerk per movement — lower is smoother. ▼ means you improved in Round 2.
-                </Text>
-                {improvements.map(({ movement, delta, improved }) => (
-                    <View key={movement} style={styles.comparisonRow}>
-                        <View style={styles.movementBadge}>
-                            <Text style={styles.movementBadgeText}>{movement}</Text>
-                        </View>
-                        <Text style={styles.comparisonLabel}>
-                            {MOVEMENT_LABELS[movement].split(":")[1]?.trim()}
-                        </Text>
-                        <View
-                            style={[
-                                styles.deltaBadge,
-                                {
-                                    backgroundColor: improved ? colors.positive + "22" : colors.destructive + "22",
-                                    borderColor: improved ? colors.positive : colors.destructive,
-                                },
-                            ]}
-                        >
-                            <Text style={{ color: improved ? colors.positive : colors.destructive, fontSize: 12, fontWeight: "700" }}>
-                                {improved ? "▼ " : "▲ "}{Math.abs(delta).toFixed(3)}
-                            </Text>
-                        </View>
-                    </View>
-                ))}
-            </View>
-
-            {/* Per-round breakdown */}
-            {rounds.map((r) => (
-                <View key={r.round} style={styles.sectionView}>
-                    <Text style={styles.subTitle}>
-                        {r.round === 1 ? "Round 1 : No Feedback 🤫" : "Round 2 : Haptic Feedback 📳"}
-                    </Text>
-                    <Text style={[styles.subText, { alignSelf: "flex-start" }]}>
-                        Hardest movement: {r.hardestMovement}
-                    </Text>
-
-                    {r.movements.map((m) => (
-                        <View key={m.movement} style={styles.movementResultCard}>
-                            <View style={styles.resultHeader}>
-                                <View
-                                    style={[
-                                        styles.movementBadge,
-                                        m.movement === r.hardestMovement && { backgroundColor: colors.destructive },
-                                    ]}
-                                >
-                                    <Text style={styles.movementBadgeText}>{m.movement}</Text>
-                                </View>
-                                <Text style={styles.subTitle}>{m.label.split(":")[1]?.trim()}</Text>
-                            </View>
-                            <View style={styles.resultGrid}>
-                                <ResultStat label="Avg Speed" value={m.avgSpeed.toString()} unit="m/s²" colors={colors} />
-                                <ResultStat label="Avg Jerk" value={m.avgJerk.toString()} unit="m/s³" colors={colors} />
-                                <ResultStat label="Max Jerk" value={m.maxJerk.toString()} unit="m/s³" colors={colors} />
-                                <ResultStat label="Range" value={m.rangeOfMotion.toString()} unit="m/s²" colors={colors} />
-                            </View>
-                            <View style={[styles.smoothnessBadge, { backgroundColor: m.smoothnessColor + "22", borderColor: m.smoothnessColor }]}>
-                                <Text style={[styles.smoothnessBadgeText, { color: m.smoothnessColor }]}>
-                                    {m.smoothnessLabel}
-                                </Text>
-                            </View>
-                        </View>
-                    ))}
-                </View>
-            ))}
-
-            {/* Write-up prompts */}
-            <View style={styles.sectionView}>
-                <Text style={styles.subTitle}>Write-up Prompts</Text>
-                <Text style={styles.promptText}>1. Which movement was hardest to keep smooth?</Text>
-                <Text style={styles.promptText}>2. Did haptic feedback help you move more smoothly in Round 2?</Text>
-                <Text style={styles.promptText}>3. Were there any movements where you got worse in Round 2? Why might that be?</Text>
-                <Text style={styles.promptText}>4. What does jerk tell us about coordination compared to speed alone?</Text>
-            </View>
-
-            <Pressable style={styles.buttonPrimary} onPress={onReset}>
-                <Text style={styles.buttonPrimaryText}>Continue</Text>
-            </Pressable>
-        </ScrollView>
-    );
-}
-
-function ResultStat({
-    label,
-    value,
-    unit,
-    colors,
-}: {
-    label: string;
-    value: string;
-    unit: string;
-    colors: Colors;
-}) {
-    const styles = getStyles(colors);
-    return (
-        <View style={styles.statBox}>
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={styles.statValue}>{value}</Text>
-            <Text style={styles.metricUnit}>{unit}</Text>
-        </View>
-    );
-}
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const getStyles = (colors: Colors) =>
-    StyleSheet.create({
-        container: {
-            flexGrow: 1,
-            backgroundColor: colors.background,
-            alignItems: "center",
-            padding: 24,
-            paddingTop: 60,
-            gap: 20,
-            paddingBottom: 150,
-        },
-        titleText: {
-            fontSize: 26,
-            fontWeight: "700",
-            color: colors.textPrimary,
-        },
-        subTitle: {
-            fontSize: 15,
-            fontWeight: "600",
-            color: colors.textPrimary,
-        },
-        subText: {
-            fontSize: 13,
-            color: colors.textSecondary,
-            textAlign: "justify",
-        },
-        sectionView: {
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            gap: 12,
-            padding: 24,
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        subSectionView: {
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-            gap: 8,
-            padding: 16,
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        roundBadge: {
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 20,
-            backgroundColor: colors.surfaceRaised,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        roundBadge2: {
-            borderColor: colors.primary,
-            backgroundColor: colors.primary + "18",
-        },
-        roundBadgeText: {
-            fontSize: 12,
-            fontWeight: "600",
-            color: colors.textSecondary,
-        },
-        roundsPreview: {
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-        },
-        roundPreviewCard: {
-            flex: 1,
-            alignItems: "center",
-            gap: 4,
-            padding: 16,
-            backgroundColor: colors.surface,
-            borderRadius: 14,
-            borderWidth: 1,
-        },
-        roundPreviewEmoji: {
-            fontSize: 28,
-        },
-        roundPreviewTitle: {
-            fontSize: 14,
-            fontWeight: "700",
-            color: colors.textPrimary,
-        },
-        roundPreviewSub: {
-            fontSize: 12,
-            color: colors.textSecondary,
-        },
-        roundArrow: {
-            alignItems: "center",
-            justifyContent: "center",
-        },
-        roundIntroEmoji: {
-            fontSize: 48,
-        },
-        movementList: {
-            width: "100%",
-            gap: 10,
-        },
-        movementRow: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-        },
-        movementHeader: {
-            flexDirection: "row",
-            gap: 16,
-            alignItems: "center",
-        },
-        movementStep: {
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: colors.surfaceRaised,
-            borderWidth: 2,
-            borderColor: colors.border,
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        movementStepActive: {
-            borderColor: colors.primary,
-            backgroundColor: colors.primary + "22",
-        },
-        movementStepDone: {
-            borderColor: colors.positive,
-            backgroundColor: colors.positive + "22",
-        },
-        movementStepText: {
-            fontSize: 14,
-            fontWeight: "600",
-            color: colors.textSecondary,
-        },
-        movementStepTextActive: {
-            color: colors.primary,
-        },
-        movementLabel: {
-            fontSize: 16,
-            fontWeight: "700",
-            color: colors.textPrimary,
-            textAlign: "center",
-        },
-        movementBadge: {
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: colors.primary,
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        movementBadgeText: {
-            fontSize: 14,
-            fontWeight: "700",
-            color: colors.textOnPrimary,
-        },
-        ringContainer: {
-            width: "90%",
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        ringBg: {
-            position: "absolute",
-            width: 200,
-            height: 200,
-            borderRadius: 100,
-            borderWidth: 8,
-            borderColor: colors.border,
-        },
-        ringFill: {
-            position: "absolute",
-            bottom: -20,
-            left: 0,
-            height: 4,
-            borderRadius: 2,
-        },
-        ringInner: {
-            alignItems: "center",
-            gap: 4,
-        },
-        countdown: {
-            fontSize: 64,
-            fontWeight: "800",
-            color: colors.textPrimary,
-            lineHeight: 72,
-        },
-        metricsRow: {
-            flexDirection: "row",
-            width: "100%",
-            gap: 12,
-        },
-        metricCard: {
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            padding: 16,
-            alignItems: "center",
-            gap: 4,
-        },
-        metricLabel: {
-            fontSize: 12,
-            fontWeight: "600",
-            color: colors.textSecondary,
-            textTransform: "uppercase",
-            letterSpacing: 0.8,
-        },
-        metricValue: {
-            fontSize: 24,
-            fontWeight: "800",
-            color: colors.textPrimary,
-        },
-        metricUnit: {
-            fontSize: 11,
-            color: colors.textDisabled,
-        },
-        hapticHint: {
-            fontSize: 12,
-            color: colors.primary,
-            fontWeight: "500",
-            textAlign: "center",
-        },
-        jerkBarBg: {
-            width: "100%",
-            height: 12,
-            backgroundColor: colors.surfaceRaised,
-            borderRadius: 6,
-            overflow: "hidden",
-        },
-        jerkBarFill: {
-            height: "100%",
-            borderRadius: 6,
-        },
-        jerkBarLabels: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            width: "100%",
-        },
-        cooldownEmoji: {
-            fontSize: 48,
-        },
-        cooldownTitle: {
-            fontSize: 20,
-            fontWeight: "700",
-            color: colors.textPrimary,
-        },
-        comparisonRow: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-            width: "100%",
-        },
-        comparisonLabel: {
-            flex: 1,
-            fontSize: 13,
-            color: colors.textSecondary,
-        },
-        deltaBadge: {
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 10,
-            borderWidth: 1,
-        },
-        movementResultCard: {
-            width: "100%",
-            gap: 10,
-            padding: 16,
-            backgroundColor: colors.surfaceRaised,
-            borderRadius: 12,
-            alignItems: "center",
-        },
-        resultHeader: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            alignSelf: "flex-start",
-        },
-        resultGrid: {
-            flexDirection: "row",
-            flexWrap: "wrap",
-            gap: 10,
-            width: "100%",
-            justifyContent: "center",
-        },
-        statBox: {
-            backgroundColor: colors.surface,
-            borderRadius: 12,
-            padding: 12,
-            alignItems: "center",
-            minWidth: "44%",
-            gap: 2,
-        },
-        statLabel: {
-            fontSize: 11,
-            fontWeight: "600",
-            color: colors.textSecondary,
-            textTransform: "uppercase",
-            letterSpacing: 0.6,
-        },
-        statValue: {
-            fontSize: 20,
-            fontWeight: "800",
-            color: colors.textPrimary,
-        },
-        smoothnessBadge: {
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 20,
-            borderWidth: 1,
-        },
-        smoothnessBadgeText: {
-            fontSize: 13,
-            fontWeight: "700",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-        },
-        promptText: {
-            fontSize: 13,
-            color: colors.textSecondary,
-            alignSelf: "flex-start",
-            lineHeight: 20,
-        },
-        buttonPrimary: {
-            width: "100%",
-            backgroundColor: colors.primary,
-            paddingVertical: 16,
-            borderRadius: 14,
-            alignItems: "center",
-        },
-        buttonPrimaryText: {
-            color: colors.textOnPrimary,
-            fontSize: 16,
-            fontWeight: "700",
-        },
-        buttonSecondary: {
-            width: "100%",
-            backgroundColor: colors.surfaceRaised,
-            paddingVertical: 16,
-            borderRadius: 14,
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        buttonSecondaryText: {
-            color: colors.textSecondary,
-            fontSize: 16,
-            fontWeight: "600",
-        },
-    });

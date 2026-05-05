@@ -50,7 +50,7 @@ export default function Act5Record() {
         let score = 4000
         score -= [...context.memberData.values()].reduce((a, c) => a += c.avgJerk + c.maxJerk, 0) * 10
         score += [...context.memberData.values()].reduce((a, c) => a += c.avgSpeed + c.range, 0) * 10
-        return roundToTwo(score)
+        return Math.round(score)
     }
 
     const handleSubmit = async (comment: string, rating: number) => {
