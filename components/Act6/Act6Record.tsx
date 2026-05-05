@@ -1,4 +1,5 @@
 
+import { getDefaultInitialStateAct6 } from '@/activityData/FSM/activity6FSM'
 import { useUser } from '@/context/UserContext'
 import { useAct6FSM } from '@/hooks/useAct6FSM'
 import useColorPalette from '@/hooks/useColorPalette'
@@ -8,8 +9,8 @@ import { Activity6Data } from '@/types/activityTypes'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
+import ActRatingComment from '../ActRatingComment'
 import Button from '../Button'
-import TextInput from '../TextInput'
 import DominantHandStep from './ReactionTimeStep'
 import TracingStep from './TracingStep'
 
@@ -18,29 +19,13 @@ export default function Act6Record() {
     const styles = getStyles(colors);
     const router = useRouter()
 
-    const [rating, setRating] = useState("")
-    const [comment, setComment] = useState("")
     const [resultString, setResultString] = useState("")
     const [score, setScore] = useState("")
-
-    const [ratingHelperText, setRatingHelperText] = useState("")
 
     const [loading, setLoading] = useState(false)
     const {teamMembers, activityAttemptId} = useUser()
 
-    const {state, context, send} = useAct6FSM({
-        state: "dominantHandTestInstructions",
-        context: {
-            dominantHandTime: new Map<string, number>(),
-            nonDominantHandTime: new Map<string, number>(),
-            tracingAcc: new Map<string, number>(),
-            teamMembers: [...teamMembers || []],
-            currentTeamMember: teamMembers![0],
-            currentMemberIndex: 1,
-            message: "",
-            prevState: "dominantHandTestInstructions"
-        }
-    })
+    const {state, context, send} = useAct6FSM(getDefaultInitialStateAct6(teamMembers))
 
     useEffect(() => {   
         if(state == "done"){
@@ -76,19 +61,8 @@ export default function Act6Record() {
         return 5000 - ReactionTimesAVG + tracingAccAVG * 3;
     }
 
-    function isNumberBetweenOneAndFive(value: string): boolean {
-        const num = Number(value);
-        return Number.isInteger(num) && num >= 1 && num <= 5;
-    }
-
-    const handleSubmit = async () => {
+    const handleSubmit = async (comment: string, rating: number) => {
         setLoading(true)
-
-        if(!isNumberBetweenOneAndFive(rating)){
-            setRatingHelperText("Enter only a number between 0 and 5")
-            setLoading(false)
-            return
-        }
         
         const accData: Activity6Data = {
             memberData: teamMembers!.map(t => ({
@@ -189,29 +163,13 @@ export default function Act6Record() {
             {state == "done" && (
                <View style={styles.sectionView}>
                     <Text style={styles.titleText}>Results</Text>
-                    <Text style={styles.titleText}>Score: {score}</Text>
+                    <Text style={styles.subTitle}>Score: {score}</Text>
                     <Text style={styles.subText}>
                         {resultString}
                     </Text>
-                    <View style={{width: "100%", display: "flex", gap: 25}}>
-                        <TextInput  
-                            label='Comment'
-                            value={comment}
-                            onChangeText={setComment}
-                        />
-                        <TextInput  
-                            label='Rating (0-5)'
-                            value={rating}
-                            onChangeText={(t) => {setRating(t); setRatingHelperText("")}}
-                            variant={ratingHelperText ? 'error' : 'default'}
-                            helperText={ratingHelperText}
-                        />
-                    </View>
-                    <Button
-                        label='Save'
-                        onPress={() => handleSubmit()}
-                        fullWidth={true}
+                    <ActRatingComment
                         loading={loading}
+                        handleSubmit={handleSubmit}
                     />
                 </View>
             )}

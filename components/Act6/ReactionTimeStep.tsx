@@ -1,5 +1,5 @@
 
-import { Act6Context } from '@/activityData/Act6/activity6FSM'
+import { Act6Context } from '@/activityData/FSM/activity6FSM'
 import useColorPalette from '@/hooks/useColorPalette'
 import { Colors } from '@/theme/theme'
 import React from 'react'
