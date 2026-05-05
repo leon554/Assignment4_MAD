@@ -1,4 +1,5 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
+import Act5Record from '@/components/Act5/Act5Record';
 import Act7Record from '@/components/Act7/Act7Record';
 import Frame from '@/components/Frame';
 import { Colors } from '@/theme/theme';
@@ -22,7 +23,9 @@ export default function ActivityRecord() {
             case "4":
                 return
             case "5":
-                return
+                return(
+                    <Act5Record/>
+                )
             case "6":
                 return(
                     <Act6Record/>

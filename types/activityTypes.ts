@@ -11,6 +11,16 @@ export type ActivityData = Record<string, {
     curriculumLinks: string[];
 }>
 
+export type Activity5Data = {
+    memberData: {
+        MemberCode: string,
+        avgSpeed: number,
+        avgJerk: number,
+        maxJerk: number,
+        range: number
+    }[]
+}
+
 export type Activity6Data = {
     memberData: {
         MemberCode: string,
