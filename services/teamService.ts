@@ -100,3 +100,8 @@ export async function addMemberToTeam(memberCode: string, teamId: string): Promi
 
     return { success: true };
 }
+
+export async function getTeam(teamId: string){
+    const teamSnap = await getDoc(doc(db, Tables.Team, teamId));
+    return teamSnap.data() as Team
+}
