@@ -4,6 +4,7 @@ import { collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } 
 import { deleteObject, getStorage, listAll, ref } from "firebase/storage";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import { getTeam } from "./teamService";
  
 
 //-----Pipeline for activity attempts----
@@ -16,11 +17,13 @@ import { v4 as uuidv4 } from 'uuid';
 export async function createEmptyAttempt(activityId: string,teamId: string,submittedByUserCode: string): Promise<{ success: boolean; attemptId?: string; message?: string }> {
     try {
         const attemptId = uuidv4();
+        const team = await getTeam(teamId)
  
-       const attempt: Partial<ActivityAttempt> = {
+        const attempt: Partial<ActivityAttempt> = {
             attemptId,
             activityId,
             teamId,
+            teamName: team.teamName,
             submittedBy: submittedByUserCode,
             date: new Date(),
             media: [],
@@ -69,10 +72,9 @@ export async function getActivityAttemptsForTeam(teamId: string): Promise<Activi
     return snap.docs.map(d => d.data() as ActivityAttempt);
 }
  
-export async function getActivityAttemptsForActivity(teamId: string, activityId: string): Promise<ActivityAttempt[]> {
+export async function getActivityAttemptsForActivity(activityId: string): Promise<ActivityAttempt[]> {
     const q = query(
         collection(db, Tables.ActivityAttempts),
-        where('teamId', '==', teamId),
         where('activityId', '==', activityId),
         where('status', '==', 'submitted')
     );

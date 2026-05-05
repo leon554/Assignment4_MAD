@@ -37,6 +37,7 @@ export interface ActivityAttempt {
     attemptId: string;
     activityId: string;
     teamId: string;
+    teamName: string
     submittedBy: string;
     data: Record<string, unknown>;
     date: Date;

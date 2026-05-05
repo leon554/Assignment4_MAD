@@ -1,10 +1,10 @@
-import { auth, db } from '@/FirebaseConfig';
+import { auth } from '@/FirebaseConfig';
 import { deleteAllDraftAttempts } from '@/services/activityAttemptService';
 import { getMembersByCodes, getMemeberFromUID } from '@/services/teamMemberService';
-import { Tables, Team, TeamMember } from '@/types/dbTypes';
+import { getTeam } from '@/services/teamService';
+import { Team, TeamMember } from '@/types/dbTypes';
 import { usePathname, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface UserContextType {
@@ -50,8 +50,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 setMember(memberData);
 
                 if (memberData?.teamId) {
-                    const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
-                    const teamData = teamSnap.data() as Team
+                    const teamData = await getTeam(memberData.teamId)
 
                     const teamMembersData = await getMembersByCodes(teamData.memberCodes)
 
@@ -87,8 +86,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setMember(memberData);
 
         if(memberData?.teamId) {
-            const teamSnap = await getDoc(doc(db, Tables.Team, memberData.teamId));
-            const teamData = teamSnap.data() as Team
+            const teamData = await getTeam(memberData.teamId)
 
             const teamMembersData = await getMembersByCodes(teamData.memberCodes)
 
