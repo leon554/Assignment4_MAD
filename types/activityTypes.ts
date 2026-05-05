@@ -19,3 +19,11 @@ export type Activity6Data = {
         TRACC: number
     }[]
 }
+
+export type Activity7Data = {
+    memberData: {
+        MemberCode: string,
+        restBPM: number,
+        activityBPM: number,
+    }[]
+}

@@ -25,6 +25,22 @@ export type Act6Event =
     | { name: "record"; data: number}
     | { name: "nextStep";}
 
+
+export function getDefaultInitialStateAct6(teamMembers: TeamMember[] | null): Act6State{
+    return {
+        state: "dominantHandTestInstructions",
+        context: {
+            dominantHandTime: new Map<string, number>(),
+            nonDominantHandTime: new Map<string, number>(),
+            tracingAcc: new Map<string, number>(),
+            teamMembers: [...teamMembers || []],
+            currentTeamMember: teamMembers![0],
+            currentMemberIndex: 1,
+            message: "",
+            prevState: "dominantHandTestInstructions"
+        }
+    }
+}  
 function setContext(this: Act6Context, context: Partial<Act6Context>): Act6Context {
     return { ...this, ...context };
 }
