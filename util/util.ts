@@ -41,7 +41,7 @@ export function getActivitySummaries(team: Team | null, allActivityAttempts: Act
         return {
             id,
             title: ACTIVITY_DATA[id].title,
-            attempts: acts.length,
+            attempts: acts.filter(a => a.teamId == team?.teamId).length,
             topScore: acts.reduce((max, a) => Math.max(max, a.score ?? 0), 0),
             topTeamScore: acts.filter(a => a.teamId == team?.teamId).reduce((max, a) => Math.max(max, a.score ?? 0), 0)
         };
