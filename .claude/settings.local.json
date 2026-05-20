@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git rebase *)",
+      "Bash(git fetch *)",
+      "Bash(git ls-tree *)",
+      "Bash(git reset *)",
+      "Bash(grep -rn \"^\\\\s*//\" --include=\"*.ts\" --include=\"*.tsx\" activityData/FSM/activity1FSM.ts activityData/FSM/activity2FSM.ts activityData/FSM/activity3FSM.ts activityData/FSM/activity4FSM.ts components/activityRecording/Act1/Act1Record.tsx components/activityRecording/Act2/Act2Record.tsx components/activityRecording/Act3/Act3Record.tsx components/activityRecording/Act4/Act4Record.tsx components/activityRecording/Act2/SoundMeter.utils.ts)"
+    ]
+  }
+}

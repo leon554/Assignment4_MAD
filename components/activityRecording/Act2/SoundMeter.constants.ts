@@ -1,0 +1,2 @@
+export const RECORDING_DURATION_MS = 5000;
+export const METER_INTERVAL_MS = 100;
