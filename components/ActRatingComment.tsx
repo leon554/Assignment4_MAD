@@ -1,3 +1,4 @@
+import { isNumberBetweenOneAndFive } from '@/util/util';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import Button from './Button';
@@ -12,11 +13,6 @@ export default function ActRatingComment({handleSubmit, loading} : Props) {
     const [rating, setRating] = useState("")
     const [comment, setComment] = useState("")
     const [ratingHelperText, setRatingHelperText] = useState("")
-
-    function isNumberBetweenOneAndFive(value: string): boolean {
-        const num = Number(value);
-        return Number.isInteger(num) && num >= 1 && num <= 5;
-    }
 
     const handleSubmitLocal = (comment: string, rating: string) => {
         
