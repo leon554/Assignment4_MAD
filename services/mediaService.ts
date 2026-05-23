@@ -43,7 +43,7 @@ export async function captureAndUploadPhoto(attemptId: string): Promise<{ succes
     }
 }
 
-export async function captureAndUploadVideo(attemptId: string): Promise<{ success: boolean; media?: AttemptMedia; message?: string }> {
+export async function captureAndUploadVideo(attemptId: string): Promise<{ success: boolean; media?: AttemptMedia; durationSeconds?: number; message?: string }> {
     try {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) return { success: false, message: "Camera permission denied" };
@@ -56,7 +56,10 @@ export async function captureAndUploadVideo(attemptId: string): Promise<{ succes
 
         if (result.canceled) return { success: false, message: "Cancelled" };
 
-        const uri = result.assets[0].uri;
+        const asset = result.assets[0];
+        const uri = asset.uri;
+        const durationSeconds = asset.duration ? asset.duration / 1000 : 0;
+
         const blob = await uriToBlob(uri);
 
         const mediaId = uuidv4();
@@ -71,7 +74,7 @@ export async function captureAndUploadVideo(attemptId: string): Promise<{ succes
             media: arrayUnion(media),
         });
 
-        return { success: true, media };
+        return { success: true, media, durationSeconds };
     } catch (error) {
         return { success: false, message: (error as Error).message };
     }

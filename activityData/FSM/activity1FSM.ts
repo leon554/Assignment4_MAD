@@ -97,7 +97,7 @@ export function send(event: Act1Event, currentState: Act1State): [Act1State, boo
                 const prev = getMemberData(ctx);
                 const updated: Act1MemberData = {
                     drops: [...prev.drops, event.data],
-                    bestFallDuration: prev.bestFallDuration,
+                    bestFallDuration: Math.max(prev.bestFallDuration, event.data.fallDurationSec), // ✅ fixed
                 };
                 return [
                     {
@@ -141,7 +141,13 @@ export function send(event: Act1Event, currentState: Act1State): [Act1State, boo
                         true,
                     ];
                 }
-                return [advanceToNextMemberOrDone({ ...ctx, memberData: newMap }, setCtx.bind({ ...ctx, memberData: newMap })), true];
+                return [
+                    advanceToNextMemberOrDone(
+                        { ...ctx, memberData: newMap },
+                        setCtx.bind({ ...ctx, memberData: newMap })
+                    ),
+                    true,
+                ];
             }
             if (event.name === "skipDrop") {
                 const prev = getMemberData(ctx);

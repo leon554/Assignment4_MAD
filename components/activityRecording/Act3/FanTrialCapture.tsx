@@ -1,11 +1,10 @@
-import { FanTrial } from "@/activityData/FSM/activity3FSM";
+import { useUser } from "@/context/UserContext";
 import useColorPalette from "@/hooks/useColorPalette";
-import * as ImagePicker from "expo-image-picker";
+import { captureAndUploadPhoto } from "@/services/mediaService";
 import { useState } from "react";
 import { View } from "react-native";
-import { PHOTO_QUALITY } from "./FanTrialCapture.constants";
 import { getStyles } from "./FanTrialCapture.styles";
-import { Phase, FanTrialCaptureProps } from "./FanTrialCapture.types";
+import { FanTrialCaptureProps, Phase } from "./FanTrialCapture.types";
 import { IdleView, TrialHeader } from "./FanTrialCapturePhaseViews";
 import FanTrialCaptureResultScreen from "./FanTrialCaptureResultScreen";
 
@@ -24,22 +23,19 @@ export default function FanTrialCapture({
     const [photoUri, setPhotoUri] = useState<string | null>(null);
     const [notes, setNotes] = useState<string>("");
     const [loading, setLoading] = useState(false);
+    const {activityAttemptId} = useUser()
 
     const takePhoto = async () => {
         setLoading(true);
-        const perm = await ImagePicker.requestCameraPermissionsAsync();
-        if (!perm.granted) {
-            alert("Camera permission is required to photograph the bend angle.");
-            setLoading(false);
-            return;
+        const result = await captureAndUploadPhoto(activityAttemptId)
+        setLoading(false)
+
+        if(!result.success){
+            alert("Error: " + result.message!)
+            return
         }
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ["images"],
-            quality: PHOTO_QUALITY,
-        });
-        setLoading(false);
-        if (result.canceled) return;
-        setPhotoUri(result.assets[0].uri);
+
+        setPhotoUri(result.media?.mediaUrl!);
         setPhase("review");
     };
 
