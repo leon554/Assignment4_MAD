@@ -338,6 +338,7 @@ const getStyles = (colors: Colors) =>
         rank: {
             fontSize: 18,
             width: 40,
+            color: colors.textPrimary
         },
 
         name: {

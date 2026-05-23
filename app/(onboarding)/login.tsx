@@ -102,17 +102,6 @@ export default function Login() {
                         colors={colors}
                     />
 
-                    <TouchableOpacity
-                        style={styles.forgotRow}
-                        // placeholder for forgot password functionality, will be implemented in future iteration
-                        onPress={() => {}}
-                        accessibilityRole="button"
-                    >
-                        <Text style={[styles.forgotText, { color: colors.primary }]}>
-                            Forgot password?
-                        </Text>
-                    </TouchableOpacity>
-
                     <Button
                         label="Login"
                         variant="primary"

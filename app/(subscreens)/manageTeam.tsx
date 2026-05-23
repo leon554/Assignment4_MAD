@@ -148,6 +148,7 @@ export default function manageTeam() {
     },
     TextBox: {
         color: colors.textPrimary,
+        borderColor: colors.border,
         padding: 10,
         paddingHorizontal: 20,
         borderRadius: 10,

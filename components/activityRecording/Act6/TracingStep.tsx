@@ -224,7 +224,7 @@ const getStyles = (colors: Colors) => StyleSheet.create({
     scoreLabel: {
         fontSize: 18,
         fontWeight: "600",
-        color: "#111",
+        color: colors.textSecondary,
     },
     button: {
         paddingHorizontal: 20,

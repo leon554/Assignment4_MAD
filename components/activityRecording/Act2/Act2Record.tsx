@@ -162,7 +162,7 @@ const getStyles = (colors: Colors) =>
             padding: 40,
             paddingTop: 50,
         },
-        titleText: { fontSize: 20, fontWeight: '600' },
-        subTitle: { fontSize: 17, fontWeight: '500' },
+        titleText: { fontSize: 20, fontWeight: '600', color: colors.textPrimary},
+        subTitle: { fontSize: 17, fontWeight: '500', color: colors.textPrimary },
         subText: { textAlign: 'justify', color: colors.textSecondary },
     });

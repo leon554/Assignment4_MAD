@@ -197,11 +197,13 @@ const getStyles = (colors: Colors) => StyleSheet.create({
     },
     titleText: {
         fontSize: 20, 
-        fontWeight: 600
+        fontWeight: 600,
+        color: colors.textPrimary
     },
     subTitle: {
         fontSize: 17, 
-        fontWeight: 500
+        fontWeight: 500,
+        color: colors.textPrimary
     },
     subText: {
         textAlign: "justify",

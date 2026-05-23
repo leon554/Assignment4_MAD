@@ -100,10 +100,11 @@ export default function Settings() {
 }
 
  const getStyles = (colors: Colors) => StyleSheet.create({
-     header: {
+    header: {
         paddingHorizontal: 24,
         paddingBottom: 12,
         gap: 4,
+        backgroundColor: colors.background
     },
     headerTitle: {
         fontSize: 26,
@@ -112,7 +113,9 @@ export default function Settings() {
     },
     View: {
         gap: 10,
-        padding: 30
+        padding: 30,
+        height: "100%",
+        backgroundColor: colors.background
     },
     Text: {
         color: colors.textPrimary,
@@ -127,6 +130,7 @@ export default function Settings() {
     },
     TextBox: {
         color: colors.textPrimary,
+        borderColor: colors.border,
         padding: 10,
         paddingHorizontal: 20,
         borderRadius: 10,
@@ -138,5 +142,6 @@ export default function Settings() {
         display: "flex",
         gap: 10,
         width: "100%",
+        backgroundColor: colors.background,
     }
 })

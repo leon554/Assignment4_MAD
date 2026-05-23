@@ -1,4 +1,5 @@
 import useColorPalette from '@/hooks/useColorPalette';
+import { Colors } from '@/theme/theme';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
@@ -10,6 +11,7 @@ type TestState = "waiting" | "ready" | "go" | "done";
 
 export default function ReactionTimeTest({ handleSubmit }: Props) {
     const colors = useColorPalette();
+    const styles = getStyles(colors);
     const [testState, setTestState] = useState<TestState>("waiting");
     const startTime = useRef<number>(0);
     const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,14 +78,16 @@ export default function ReactionTimeTest({ handleSubmit }: Props) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: Colors) => StyleSheet.create({
     button: {
         width: "80%",
         height: 220,
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 2
+        borderWidth: 2,
+        borderColor: colors.border,
+        color: colors.surface
     },
     label: {
         fontSize: 24,
