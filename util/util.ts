@@ -47,3 +47,8 @@ export function getActivitySummaries(team: Team | null, allActivityAttempts: Act
         };
     });
 }
+
+export function isNumberBetweenOneAndFive(value: string): boolean {
+    const num = Number(value);
+    return Number.isInteger(num) && num >= 1 && num <= 5;
+}
