@@ -3,8 +3,8 @@ import { useUser } from '@/context/UserContext';
 import { useAct1FSM } from '@/hooks/useAct1FSM';
 import useColorPalette from '@/hooks/useColorPalette';
 import { submitAttempt } from '@/services/activityAttemptService';
-import { captureAndUploadVideo } from '@/services/mediaService';
 import { Colors } from '@/theme/theme';
+import { roundToTwo } from '@/util/util';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -31,9 +31,9 @@ export default function Act1Record() {
     const calculateScore = () => {
         let total = 0;
         context.memberData.forEach((data) => {
-            total += data.bestFallDuration * 500;
+            total += data.bestFallDuration;
         });
-        return Math.round(total);
+        return roundToTwo(total);
     };
 
     const getResultText = () => {
@@ -50,14 +50,6 @@ export default function Act1Record() {
 
     const handleSubmit = async (comment: string, rating: number) => {
         setLoading(true);
-
-        for (const [, memberData] of context.memberData) {
-            for (const drop of memberData.drops) {
-                if (drop.videoUri) {
-                    await captureAndUploadVideo(activityAttemptId).catch(() => null);
-                }
-            }
-        }
 
         const actData: Record<string, unknown> = {};
         context.memberData.forEach((data, code) => {
@@ -189,7 +181,7 @@ const getStyles = (colors: Colors) =>
             padding: 40,
             paddingTop: 50,
         },
-        titleText: { fontSize: 20, fontWeight: '600' },
-        subTitle: { fontSize: 17, fontWeight: '500' },
+        titleText: { fontSize: 20, fontWeight: '600', color: colors.textPrimary },
+        subTitle: { fontSize: 17, fontWeight: '500', color: colors.textPrimary },
         subText: { textAlign: 'justify', color: colors.textSecondary },
     });

@@ -1,11 +1,11 @@
-import { DropData } from "@/activityData/FSM/activity1FSM";
+import { useUser } from "@/context/UserContext";
 import useColorPalette from "@/hooks/useColorPalette";
-import * as ImagePicker from "expo-image-picker";
+import { captureAndUploadVideo } from "@/services/mediaService";
 import { useRef, useState } from "react";
 import { Text, View } from "react-native";
-import { VIDEO_MAX_DURATION_SEC, TIMER_INTERVAL_MS } from "./ParachuteDropCapture.constants";
+import { TIMER_INTERVAL_MS } from "./ParachuteDropCapture.constants";
 import { getStyles } from "./ParachuteDropCapture.styles";
-import { Phase, ParachuteDropCaptureProps } from "./ParachuteDropCapture.types";
+import { ParachuteDropCaptureProps, Phase } from "./ParachuteDropCapture.types";
 import { getDropLabel } from "./ParachuteDropCapture.utils";
 import { IdleView, TimingView } from "./ParachuteDropCapturePhaseViews";
 import ParachuteDropCaptureResultScreen from "./ParachuteDropCaptureResultScreen";
@@ -26,6 +26,7 @@ export default function ParachuteDropCapture({
     const [elapsed, setElapsed] = useState<number>(0);
     const [loading, setLoading] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const {activityAttemptId} = useUser()
 
     const startTimer = () => {
         const now = Date.now();
@@ -46,24 +47,16 @@ export default function ParachuteDropCapture({
 
     const recordVideo = async () => {
         setLoading(true);
-        const perm = await ImagePicker.requestCameraPermissionsAsync();
-        if (!perm.granted) {
-            alert("Camera permission is required to record the drop.");
-            setLoading(false);
-            return;
-        }
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ["videos"],
-            videoMaxDuration: VIDEO_MAX_DURATION_SEC,
-            quality: ImagePicker.UIImagePickerControllerQualityType.Medium,
-        });
+        const result = await captureAndUploadVideo(activityAttemptId)
         setLoading(false);
-        if (result.canceled) return;
-        const asset = result.assets[0];
-        setVideoUri(asset.uri);
-        if (asset.duration && asset.duration > 0) {
-            setFallDuration(asset.duration);
+
+        if(!result.success){
+            alert("Video error" + result.message)
+            return 
         }
+
+        setVideoUri(result.media?.mediaUrl!);
+        setFallDuration(result.durationSeconds!);
         setPhase("review");
     };
 
