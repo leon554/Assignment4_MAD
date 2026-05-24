@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 
 export const Tables = {
     TeamMember: 'TeamMember',
@@ -40,7 +41,7 @@ export interface ActivityAttempt {
     teamName: string
     submittedBy: string;
     data: Record<string, unknown>;
-    date: Date;
+    date: Timestamp;
     comment: string;
     rating: number;
     score: number;

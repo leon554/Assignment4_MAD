@@ -38,12 +38,13 @@ export function getTeamRanking(team: Team | null, allActivityAttempts: ActivityA
 export function getActivitySummaries(team: Team | null, allActivityAttempts: ActivityAttempt[]){
     return Object.keys(ACTIVITY_DATA).map((id) => {
         const acts = allActivityAttempts.filter((a) => a.activityId === id);
+        const teamActs = acts.filter(a => a.teamId == team?.teamId);
         return {
             id,
             title: ACTIVITY_DATA[id].title,
-            attempts: acts.filter(a => a.teamId == team?.teamId).length,
+            attempts: teamActs.length,
             topScore: acts.reduce((max, a) => Math.max(max, a.score ?? 0), 0),
-            topTeamScore: acts.filter(a => a.teamId == team?.teamId).reduce((max, a) => Math.max(max, a.score ?? 0), 0)
+            topTeamScore: teamActs.reduce((max, a) => Math.max(max, a.score ?? 0), 0)
         };
     });
 }
