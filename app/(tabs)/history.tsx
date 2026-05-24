@@ -1,10 +1,11 @@
+import { ACTIVITY_DATA } from '@/activityData/activityData';
 import { useUser } from '@/context/UserContext';
 import useColorPalette from '@/hooks/useColorPalette';
 import { getActivityAttemptsForTeam } from '@/services/activityAttemptService';
-import { Colors } from '@/theme/theme';
+import { Colors, DISCIPLINE_COLORS } from '@/theme/theme';
 import { ActivityAttempt } from '@/types/dbTypes';
+import { TimeStampToDateString } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
-import { Timestamp } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,42 +16,6 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// activity names mapped from id
-
-const ACTIVITY_NAMES: Record<string, string> = {
-    '1': 'Parachute Drop Challenge',
-    '2': 'Sound Pollution Hunter',
-    '3': 'Hand Fan Challenge',
-    '4': 'Earthquake-Resistant Structure',
-    '5': 'Human Performance Lab',
-    '6': 'Reaction Board Challenge',
-    '7': 'Breathing Pace Trainer',
-};
-
-const DISCIPLINE_COLORS: Record<string, string> = {
-    '1': '#673AB7',
-    '2': '#4CAF50',
-    '3': '#FF9800',
-    '4': '#673AB7',
-    '5': '#E91E63',
-    '6': '#2196F3',
-    '7': '#E91E63',
-};
-
-function formatDate(date: Timestamp): string {
-    try {
-        const timestamp = new Timestamp(date.seconds, date.nanoseconds)
-        const d = new Date(timestamp.toDate());
-        return d.toLocaleDateString('en-AU', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-        });
-    } catch(e ) {
-        return `${date}`;
-    }
-}
 
 function StarRating({ rating, color }: { rating: number; color: string }) {
     return (
@@ -82,7 +47,6 @@ export default function History() {
         }
         try {
             const data = await getActivityAttemptsForTeam(member.teamId);
-            // sort by date descending
             const sorted = data.sort((a, b) => {
                 const dateA = new Date(a.date as any);
                 const dateB = new Date(b.date as any);
@@ -172,14 +136,14 @@ export default function History() {
                     }
                 >
                     {attempts.map((attempt) => {
-                        const activityName = ACTIVITY_NAMES[attempt.activityId] ?? `Activity ${attempt.activityId}`;
+                        const activityName = ACTIVITY_DATA[attempt.activityId].title ?? `Activity ${attempt.activityId}`;
                         const tagColor = DISCIPLINE_COLORS[attempt.activityId] ?? colors.primary;
 
                         return (
                             <View
                                 key={attempt.attemptId}
                                 style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                                accessibilityLabel={`${activityName} attempt on ${formatDate(attempt.date)}`}
+                                accessibilityLabel={`${activityName} attempt on ${TimeStampToDateString(attempt.date)}`}
                             >
                                 {/* card header */}
                                 <View style={styles.cardHeader}>
@@ -189,7 +153,7 @@ export default function History() {
                                         </Text>
                                     </View>
                                     <Text style={[styles.dateText, { color: colors.textSecondary }]}>
-                                        {formatDate(attempt.date)}
+                                        {TimeStampToDateString(attempt.date)}
                                     </Text>
                                 </View>
 

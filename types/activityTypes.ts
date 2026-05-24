@@ -1,5 +1,3 @@
-
-
 export type ActivityData = Record<string, {
     id: string;
     title: string;

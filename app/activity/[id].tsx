@@ -3,21 +3,11 @@ import Button from '@/components/Button';
 import { useUser } from '@/context/UserContext';
 import useColorPalette from '@/hooks/useColorPalette';
 import { createEmptyAttempt } from '@/services/activityAttemptService';
-import { Colors } from '@/theme/theme';
+import { Colors, DISCIPLINE_COLORS } from '@/theme/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-
-
-const DISCIPLINE_COLORS: Record<string, string> = {
-    Engineering: '#673AB7',
-    Science: '#4CAF50',
-    Physics: '#FF9800',
-    Medical: '#E91E63',
-    Neuroscience: '#2196F3',
-};
 
 export default function ActivityDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -57,8 +47,6 @@ export default function ActivityDetail() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-
-            {/* header */}
             <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <TouchableOpacity
                     onPress={() => router.push('/(tabs)/activities')}
@@ -80,13 +68,11 @@ export default function ActivityDetail() {
                 contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
                 showsVerticalScrollIndicator={false}
             >
-                {/* overview */}
                 <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Overview</Text>
                     <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{activity.overview}</Text>
                 </View>
 
-                {/* equipment */}
                 <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Equipment</Text>
                     {activity.equipment.map((item, index) => (
@@ -97,7 +83,6 @@ export default function ActivityDetail() {
                     ))}
                 </View>
 
-                {/* instructions */}
                 <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Instructions</Text>
                     {activity.instructions.map((step, index) => (
@@ -110,7 +95,6 @@ export default function ActivityDetail() {
                     ))}
                 </View>
 
-                {/* curriculum links */}
                 <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Curriculum Links</Text>
                     {activity.curriculumLinks.map((link, index) => (
@@ -121,7 +105,6 @@ export default function ActivityDetail() {
                     ))}
                 </View>
 
-                {/* start activity button */}
                 <Button
                     label='Start Activity'
                     loading={loading}
