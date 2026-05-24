@@ -1,19 +1,11 @@
 import { ACTIVITY_DATA } from "@/activityData/activityData";
 import { db } from "@/FirebaseConfig";
 import { ActivityAttempt, activityAttemptData, Tables } from "@/types/dbTypes";
-import { collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { deleteObject, getStorage, listAll, ref } from "firebase/storage";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { getTeam } from "./teamService";
- 
-
-//-----Pipeline for activity attempts----
-// 1. use createEmptyAttempt to create an empty attempt which will return a attemptId which can be stored in the user
-//contex for global acces
-// 2. use submitAttempt, captureAndUploadPhoto and/or captureAndUploadVideo to add data
-//    to the attempt using the attemptId
-//--------------------------------------
 
 export async function createEmptyAttempt(activityId: string,teamId: string,submittedByUserCode: string): Promise<{ success: boolean; attemptId?: string; message?: string }> {
     try {
@@ -26,7 +18,7 @@ export async function createEmptyAttempt(activityId: string,teamId: string,submi
             teamId,
             teamName: team.teamName,
             submittedBy: submittedByUserCode,
-            date: new Date(),
+            date: Timestamp.fromDate(new Date()),
             media: [],
             status: "draft",
         };
@@ -97,6 +89,7 @@ export async function deleteAllAttemptMedia(attemptId: string): Promise<{ succes
         return { success: false, message: (error as Error).message };
     }
 }
+
 export async function deleteAllDraftAttempts(): Promise<{ success: boolean; deletedCount?: number; message?: string }> {
     try {
         const q = query(

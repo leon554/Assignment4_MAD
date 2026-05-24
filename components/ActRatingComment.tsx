@@ -15,12 +15,10 @@ export default function ActRatingComment({handleSubmit, loading} : Props) {
     const [ratingHelperText, setRatingHelperText] = useState("")
 
     const handleSubmitLocal = (comment: string, rating: string) => {
-        
         if(!isNumberBetweenOneAndFive(rating)){
             setRatingHelperText("Enter only a number between 0 and 5")
             return
         }
-        
         handleSubmit(comment, Number(rating))
     }
 

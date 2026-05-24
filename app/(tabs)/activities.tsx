@@ -1,20 +1,9 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
 import useColorPalette from '@/hooks/useColorPalette';
-import { Colors } from '@/theme/theme';
+import { Colors, DISCIPLINE_COLORS } from '@/theme/theme';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-
-// discipline tag colours
-
-const DISCIPLINE_COLORS: Record<string, string> = {
-    Engineering: '#673AB7',
-    Science: '#4CAF50',
-    Physics: '#FF9800',
-    Medical: '#E91E63',
-    Neuroscience: '#2196F3',
-};
 
 export default function Activities() {
     const router = useRouter();

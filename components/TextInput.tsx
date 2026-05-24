@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
-    TextInput as RNTextInput,
-    TextInputProps as RNTextInputProps,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useColorScheme,
-    View,
-    ViewStyle,
+  TextInput as RNTextInput,
+  TextInputProps as RNTextInputProps,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+  ViewStyle,
 } from 'react-native';
 import { Colors, darkColors, lightColors } from '../theme/theme';
 
@@ -85,23 +85,18 @@ export const TextInput: React.FC<TextInputProps> = ({
 
   return (
     <View style={styles.wrapper}>
-
-      {/* label */}
       {label && (
         <Text style={[styles.label, { color: themeColors.textPrimary }]}>
           {label}
         </Text>
       )}
 
-      {/* input */}
       <View style={containerStyle}>
 
-        {/* left icon */}
         {leftIcon && (
           <View style={styles.leftIcon}>{leftIcon}</View>
         )}
 
-        {/* text input */}
         <RNTextInput
           style={[
             styles.input,
@@ -116,7 +111,6 @@ export const TextInput: React.FC<TextInputProps> = ({
           {...rest}
         />
 
-        {/* password toggle */}
         {secureTextEntry && (
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -129,14 +123,12 @@ export const TextInput: React.FC<TextInputProps> = ({
           </TouchableOpacity>
         )}
 
-        {/* right icon */}
         {rightIcon && !secureTextEntry && (
           <View style={styles.rightIcon}>{rightIcon}</View>
         )}
 
       </View>
 
-      {/* error text */}
       {helperText && (
         <Text style={[styles.helperText, { color: helperColor() }]}>
           {helperText}
@@ -146,8 +138,6 @@ export const TextInput: React.FC<TextInputProps> = ({
     </View>
   );
 };
-
-// styles
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -161,7 +151,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    padding: 0,  // removes default Android padding
+    padding: 0,  
   },
   leftIcon: {
     marginRight: 10,

@@ -100,4 +100,10 @@ export const darkColors: Colors = {
     borderStrong: palette.grey600,
 };
 
-
+export const DISCIPLINE_COLORS: Record<string, string> = {
+    Engineering: '#673AB7',
+    Science: '#4CAF50',
+    Physics: '#FF9800',
+    Medical: '#E91E63',
+    Neuroscience: '#2196F3',
+};
