@@ -4,6 +4,7 @@ import { getActivityAttemptsForTeam } from '@/services/activityAttemptService';
 import { Colors } from '@/theme/theme';
 import { ActivityAttempt } from '@/types/dbTypes';
 import { useFocusEffect } from 'expo-router';
+import { Timestamp } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -37,16 +38,17 @@ const DISCIPLINE_COLORS: Record<string, string> = {
     '7': '#E91E63',
 };
 
-function formatDate(date: Date | any): string {
+function formatDate(date: Timestamp): string {
     try {
-        const d = new Date(date as any);
+        const timestamp = new Timestamp(date.seconds, date.nanoseconds)
+        const d = new Date(timestamp.toDate());
         return d.toLocaleDateString('en-AU', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
         });
-    } catch {
-        return 'Unknown date';
+    } catch(e ) {
+        return `${date}`;
     }
 }
 
