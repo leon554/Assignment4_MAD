@@ -31,7 +31,7 @@ export default function Leaderboard() {
     const styles = getStyles(colors);
 
     const [selectedActivityName, setSelectedActivityName] = useState(
-        ACTIVITY_DATA['1'].title
+        ACTIVITY_DATA['6'].title
     );
     const [groupMode, setGroupMode] = useState<'individual' | 'team'>('individual');
 
