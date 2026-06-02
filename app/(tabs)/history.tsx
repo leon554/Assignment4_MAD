@@ -1,34 +1,16 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
+import StarRating from '@/components/StarRating';
 import { useUser } from '@/context/UserContext';
 import useColorPalette from '@/hooks/useColorPalette';
 import { getActivityAttemptsForTeam } from '@/services/activityAttemptService';
 import { Colors, DISCIPLINE_COLORS } from '@/theme/theme';
 import { ActivityAttempt } from '@/types/dbTypes';
-import { FormatNumber, TimeStampToDateString } from '@/util/util';
+import { FormatNumber } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
 import { Timestamp } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
-import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-function StarRating({ rating, color }: { rating: number; color: string }) {
-    return (
-        <View style={{ flexDirection: 'row', gap: 2 }}>
-            {[1, 2, 3, 4, 5].map(i => (
-                <Text key={i} style={{ fontSize: 12, color: i <= rating ? color : '#CCCCCC' }}>
-                    ★
-                </Text>
-            ))}
-        </View>
-    );
-}
 
 export default function History() {
     const colors = useColorPalette();
@@ -74,6 +56,20 @@ export default function History() {
         setRefreshing(true);
         loadAttempts();
     };
+    
+    function TimeStampToDateString(date: Timestamp): string {
+        try {
+            const timestamp = new Timestamp(date.seconds, date.nanoseconds)
+            const d = new Date(timestamp.toDate());
+            return d.toLocaleDateString('en-AU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            });
+        } catch(e ) {
+            return `${date}`;
+        }
+    }
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -88,21 +84,18 @@ export default function History() {
                 </Text>
             </View>
 
-            {/* loading */}
             {loading && (
                 <View style={styles.centred}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             )}
 
-            {/* error */}
             {!loading && error !== '' && (
                 <View style={styles.centred}>
                     <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{error}</Text>
                 </View>
             )}
 
-            {/* no team */}
             {!loading && !member?.teamId && (
                 <View style={styles.centred}>
                     <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
@@ -111,7 +104,6 @@ export default function History() {
                 </View>
             )}
 
-            {/* empty state */}
             {!loading && member?.teamId && attempts.length === 0 && error === '' && (
                 <View style={styles.centred}>
                     <Text style={styles.emptyIcon}>📋</Text>
@@ -122,7 +114,6 @@ export default function History() {
                 </View>
             )}
 
-            {/* attempts list */}
             {!loading && attempts.length > 0 && (
                 <ScrollView
                     contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 32 }]}
@@ -145,7 +136,6 @@ export default function History() {
                                 style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
                                 accessibilityLabel={`${activityName} attempt on ${TimeStampToDateString(attempt.date)}`}
                             >
-                                {/* card header */}
                                 <View style={styles.cardHeader}>
                                     <View style={[styles.activityTag, { backgroundColor: tagColor + '22' }]}>
                                         <Text style={[styles.activityTagText, { color: tagColor }]}>
@@ -157,12 +147,10 @@ export default function History() {
                                     </Text>
                                 </View>
 
-                                {/* activity name */}
                                 <Text style={[styles.activityName, { color: colors.textPrimary }]}>
                                     {activityName}
                                 </Text>
 
-                                {/* score and rating row */}
                                 <View style={styles.statsRow}>
                                     <View style={[styles.scoreBadge, { backgroundColor: tagColor + '22' }]}>
                                         <Text style={[styles.scoreLabel, { color: colors.textSecondary }]}>Score</Text>
@@ -176,7 +164,6 @@ export default function History() {
                                     </View>
                                 </View>
 
-                                {/* comment */}
                                 {attempt.comment ? (
                                     <Text
                                         style={[styles.comment, { color: colors.textSecondary, borderTopColor: colors.border }]}
@@ -186,7 +173,6 @@ export default function History() {
                                     </Text>
                                 ) : null}
 
-                                {/* submitted by */}
                                 <Text style={[styles.submittedBy, { color: colors.textDisabled }]}>
                                     Submitted by {attempt.submittedBy}
                                 </Text>

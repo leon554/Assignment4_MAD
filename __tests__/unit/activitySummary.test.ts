@@ -1,6 +1,5 @@
 import { ActivityAttempt, Team } from "@/types/dbTypes";
 import { getActivitySummaries } from "@/util/util";
-import { Timestamp } from "firebase/firestore";
 
 describe('Activity Summaries', () => {
     const team: Team = {
@@ -17,7 +16,7 @@ describe('Activity Summaries', () => {
             teamName: team.teamName,
             submittedBy: team.memberCodes[0],
             data: {},
-            date: new Timestamp(1, 1),
+            date: "12 May 2026 at 08:42:59 UTC+10" as any,
             comment: "comment",
             rating: 5,
             score: 4875,
@@ -31,7 +30,7 @@ describe('Activity Summaries', () => {
             teamName: "team2",
             submittedBy: "BDPXSB",
             data: {},
-            date: new Timestamp(1, 1),
+            date: "12 May 2026 at 08:42:59 UTC+10",
             comment: "comment",
             rating: 5,
             score: 7875,

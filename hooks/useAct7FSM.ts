@@ -1,9 +1,6 @@
 import { Act7Event, Act7State, send } from "@/activityData/FSM/activity7FSM";
 import { useState } from "react";
 
-
-
-
 export function useAct7FSM(initialState: Act7State) : {
     state: Act7State["state"]
     context: Act7State["context"]

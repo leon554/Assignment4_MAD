@@ -51,7 +51,6 @@ export default function Home() {
         loadAll();
     };
 
-
     const teamRankingSummary = useMemo(() => 
         getTeamRanking(team, allAttempts), [allAttempts, team]);
 
@@ -102,7 +101,7 @@ export default function Home() {
                         {!teamRankingSummary ? (
                             <EmptyNode text="No ranking data yet." />
                         ) : (
-                            <View style={[styles.card, { backgroundColor: colors.primary + '22', borderColor: colors.borderStrong }]}>
+                            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                                 <Text style={[styles.name, { color: colors.textPrimary, marginBottom: 12 }]}>
                                     {team?.teamName}
                                 </Text>

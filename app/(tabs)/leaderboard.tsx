@@ -1,4 +1,5 @@
 import { ACTIVITY_DATA } from '@/activityData/activityData';
+import Button from '@/components/Button';
 import { Dropdown } from '@/components/DropDown';
 import useColorPalette from '@/hooks/useColorPalette';
 import { getActivityAttemptsForActivity } from '@/services/activityAttemptService';
@@ -7,17 +8,8 @@ import { ActivityAttempt } from '@/types/dbTypes';
 import { FormatNumber } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 type LeaderboardEntry = {
     name: string;
@@ -74,33 +66,9 @@ export default function Leaderboard() {
 
     const leaderboard = useMemo(() => {
         if (groupMode === 'individual') {
-            return attempts
-                .map((a) => ({
-                    name: a.submittedBy,
-                    totalScore: a.score ?? 0,
-                    attempts: 1,
-                    attemptId: a.attemptId,
-                }))
-                .sort((a, b) => b.totalScore - a.totalScore);
+            return getIndevidaulRankings(attempts)
         }
-        const map: Record<string, LeaderboardEntry> = {};
-
-        attempts.forEach((a) => {
-            const key = a.teamId ?? 'Unknown Team';
-
-            if (!map[key]) {
-                map[key] = {
-                    name: a.teamName,
-                    totalScore: 0,
-                    attempts: 0,
-                };
-            }
-
-            map[key].totalScore += a.score ?? 0;
-            map[key].attempts += 1;
-        });
-
-        return Object.values(map).sort((a, b) => b.totalScore - a.totalScore);
+        return getTeamRankings(attempts)
     }, [attempts, groupMode]);
 
     const getRankIcon = (index: number) => {
@@ -112,8 +80,6 @@ export default function Leaderboard() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-
-            {/* Header */}
             <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
                 <Text style={[styles.title, { color: colors.textPrimary }]}>
                     Leaderboard
@@ -123,7 +89,6 @@ export default function Leaderboard() {
                 </Text>
             </View>
 
-            {/* Controls */}
             <View style={styles.controls}>
                 <Dropdown
                     options={[...Object.values(ACTIVITY_DATA)].map(a => a.title)}
@@ -131,78 +96,36 @@ export default function Leaderboard() {
                     onSelect={setSelectedActivityName}
                     showSearch
                 />
-
-                {/* Toggle */}
                 <View style={styles.toggleRow}>
-                    <TouchableOpacity
+                    <Button
+                        label='Individual Best'
+                        size="sm"
+                        variant={groupMode === 'individual' ? "primary" : "outline"}
                         onPress={() => setGroupMode('individual')}
-                        style={[
-                            styles.toggleButton,
-                            {
-                                backgroundColor:
-                                    groupMode === 'individual'
-                                        ? colors.primary
-                                        : colors.surface,
-                            },
-                        ]}
-                    >
-                        <Text
-                            style={{
-                                color:
-                                    groupMode === 'individual'
-                                        ? '#fff'
-                                        : colors.textPrimary,
-                                fontSize: 12,
-                                fontWeight: '600',
-                            }}
-                        >
-                            Individual
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
+                        style={{width: "49%"}}
+                    />
+                    <Button
+                        label='Team Avg'
+                        size="sm"
+                        variant={groupMode === 'team' ? "primary" : "outline"}
                         onPress={() => setGroupMode('team')}
-                        style={[
-                            styles.toggleButton,
-                            {
-                                backgroundColor:
-                                    groupMode === 'team'
-                                        ? colors.primary
-                                        : colors.surface,
-                            },
-                        ]}
-                    >
-                        <Text
-                            style={{
-                                color:
-                                    groupMode === 'team'
-                                        ? '#fff'
-                                        : colors.textPrimary,
-                                fontSize: 12,
-                                fontWeight: '600',
-                            }}
-                        >
-                            Team
-                        </Text>
-                    </TouchableOpacity>
+                        style={{width: "48%"}}
+                    />
                 </View>
             </View>
 
-            {/* Loading */}
             {loading && (
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             )}
 
-            {/* Error */}
             {!loading && error !== '' && (
                 <View style={styles.centered}>
                     <Text style={{ color: colors.textSecondary }}>{error}</Text>
                 </View>
             )}
 
-            {/* Leaderboard */}
             {!loading && leaderboard.length > 0 && (
                 <ScrollView
                     contentContainerStyle={{
@@ -236,19 +159,13 @@ export default function Leaderboard() {
 
                                 <View style={{ flex: 1 }}>
                                     <Text
-                                        style={[
-                                            styles.name,
-                                            { color: colors.textPrimary },
-                                        ]}
+                                        style={[ styles.name, { color: colors.textPrimary }]}
                                     >
                                         {entry.name}
                                     </Text>
 
                                     <Text
-                                        style={{
-                                            color: colors.textSecondary,
-                                            fontSize: 12,
-                                        }}
+                                        style={{ color: colors.textSecondary, fontSize: 12}}
                                     >
                                         {groupMode === 'team'
                                             ? `${entry.attempts} attempt${entry.attempts === 1 ? '' : 's'}`
@@ -262,7 +179,7 @@ export default function Leaderboard() {
                                         { color: colors.primary },
                                     ]}
                                 >
-                                    {FormatNumber(entry.totalScore)}
+                                    {FormatNumber(entry.totalScore/entry.attempts)}
                                 </Text>
                             </View>
                         </View>
@@ -270,7 +187,6 @@ export default function Leaderboard() {
                 </ScrollView>
             )}
 
-            {/* Empty */}
             {!loading && leaderboard.length === 0 && (
                 <View style={styles.centered}>
                     <Text style={{ color: colors.textSecondary }}>
@@ -280,6 +196,35 @@ export default function Leaderboard() {
             )}
         </View>
     );
+}
+
+function getIndevidaulRankings(attempts: ActivityAttempt[]){
+    return attempts
+        .map((a) => ({
+            name: a.submittedBy,
+            totalScore: a.score ?? 0,
+            attempts: 1,
+            attemptId: a.attemptId,
+        }))
+        .sort((a, b) => b.totalScore - a.totalScore);
+}
+
+function getTeamRankings(attempts: ActivityAttempt[]){
+    const map: Record<string, LeaderboardEntry> = {};
+        attempts.forEach((a) => {
+            const key = a.teamId ?? 'Unknown Team';
+            if (!map[key]) {
+                map[key] = {
+                    name: a.teamName,
+                    totalScore: 0,
+                    attempts: 0,
+                };
+            }
+            map[key].totalScore += a.score ?? 0;
+            map[key].attempts += 1;
+        });
+
+    return Object.values(map).sort((a, b) => (b.totalScore/b.attempts) - (a.totalScore/a.attempts));
 }
 
 const getStyles = (colors: Colors) =>

@@ -17,11 +17,7 @@ import {
 import Button from '../../components/Button';
 import TextInput from '../../components/TextInput';
 
-// grade year level options
-
 const GRADES = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
-
-// componant
 
 export default function Teamformation() {
     const router = useRouter();
@@ -31,18 +27,14 @@ export default function Teamformation() {
     const [teamName, setTeamName] = useState('');
     const [members, setMembers] = useState<string[]>([]);
     const [grade, setGrade] = useState('');
-    const [gradeOpen, setGradeOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // errors
     const [teamNameError, setTeamNameError] = useState('');
     const [memberErrors, setMemberErrors] = useState<string[]>([]);
     const [gradeError, setGradeError] = useState('');
 
     const { member, refreshMember } = useUser();
     const loadingID = useRef(0)
-
-    // add, update and remove members
 
     const addMember = () => {
         if (members.length < 6) {
@@ -63,8 +55,6 @@ export default function Teamformation() {
         setMembers(updatedMembers);
         setMemberErrors(updatedErrors);
     };
-
-    // validation
 
     const validate = (): boolean => {
         let valid = true;
@@ -90,8 +80,6 @@ export default function Teamformation() {
         return valid;
     };
 
-    // submit
-
     const handleContinue = async () => {
         if (!validate()) return;
         setLoading(true);
@@ -115,8 +103,6 @@ export default function Teamformation() {
     const handleJoinTeamLater = () => {
         router.replace('/(tabs)')
     }
-
-    // render
 
     return (
         <KeyboardAvoidingView
@@ -242,9 +228,6 @@ export default function Teamformation() {
         </KeyboardAvoidingView>
     );
 }
-
-// styles
-
 const getStyles = (colors: Colors) => StyleSheet.create({
     container: {
         flex: 1,

@@ -13,8 +13,6 @@ export default function Activities() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-
-            {/* header with safe area top padding */}
             <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
                 <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Activities</Text>
                 <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
@@ -22,7 +20,6 @@ export default function Activities() {
                 </Text>
             </View>
 
-            {/* activity list */}
             <ScrollView
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
@@ -37,14 +34,12 @@ export default function Activities() {
                             accessibilityRole="button"
                             accessibilityLabel={`Activity ${activity.id}: ${activity.title}`}
                         >
-                            {/* activity number */}
                             <View style={[styles.numberBadge, { backgroundColor: disciplineColor + '22'}]}>
                                 <Text style={[styles.numberText, { color: disciplineColor }]}>
                                     {activity.id}
                                 </Text>
                             </View>
     
-                            {/* content */}
                             <View style={styles.cardContent}>
                                 <View style={styles.titleRow}>
                                     <Text style={[styles.activityTitle, { color: colors.textPrimary }]}>
@@ -67,7 +62,6 @@ export default function Activities() {
                                 </Text>
                             </View>
     
-                            {/* chevron */}
                             <Text style={[styles.chevron, { color: colors.textDisabled }]}>›</Text>
                         </TouchableOpacity>
                     )

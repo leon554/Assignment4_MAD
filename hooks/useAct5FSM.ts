@@ -1,4 +1,3 @@
-
 import { Act5Event, Act5State, send } from "@/activityData/FSM/activity5FSM";
 import { useState } from "react";
 

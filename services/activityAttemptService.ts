@@ -7,7 +7,7 @@ import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { getTeam } from "./teamService";
 
-export async function createEmptyAttempt(activityId: string,teamId: string,submittedByUserCode: string): Promise<{ success: boolean; attemptId?: string; message?: string }> {
+export async function createEmptyAttempt(activityId: string, teamId: string,submittedByUserCode: string): Promise<{ success: boolean; attemptId?: string; message?: string }> {
     try {
         const attemptId = uuidv4();
         const team = await getTeam(teamId)
@@ -27,6 +27,7 @@ export async function createEmptyAttempt(activityId: string,teamId: string,submi
  
         return { success: true, attemptId };
     } catch (error) {
+        console.error('createEmptyAttempt failed:', error);
         return { success: false, message: (error as Error).message };
     }
 }
