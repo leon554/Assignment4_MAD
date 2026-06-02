@@ -83,3 +83,15 @@ export type Activity4Data = {
         }[];
     }[];
 };
+
+export interface Act7SessionResult {
+	avgBpm: number;
+	minBpm: number;
+	maxBpm: number;
+	readings: number[];
+}
+
+export interface BreathingSample {
+	val: number;
+	timestamp: number;
+}

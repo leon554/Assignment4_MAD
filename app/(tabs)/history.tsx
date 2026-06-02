@@ -4,8 +4,9 @@ import useColorPalette from '@/hooks/useColorPalette';
 import { getActivityAttemptsForTeam } from '@/services/activityAttemptService';
 import { Colors, DISCIPLINE_COLORS } from '@/theme/theme';
 import { ActivityAttempt } from '@/types/dbTypes';
-import { TimeStampToDateString } from '@/util/util';
+import { FormatNumber, TimeStampToDateString } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
+import { Timestamp } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -48,8 +49,8 @@ export default function History() {
         try {
             const data = await getActivityAttemptsForTeam(member.teamId);
             const sorted = data.sort((a, b) => {
-                const dateA = new Date(a.date as any);
-                const dateB = new Date(b.date as any);
+                const dateA = new Date((a.date as Timestamp).toDate());
+                const dateB = new Date((b.date as Timestamp).toDate());
                 return dateB.getTime() - dateA.getTime();
             });
             setAttempts(sorted);
@@ -62,7 +63,6 @@ export default function History() {
         }
     }, [member?.teamId]);
 
-    // reload every time the tab is focused
     useFocusEffect(
         useCallback(() => {
             setLoading(true);
@@ -137,7 +137,7 @@ export default function History() {
                 >
                     {attempts.map((attempt) => {
                         const activityName = ACTIVITY_DATA[attempt.activityId].title ?? `Activity ${attempt.activityId}`;
-                        const tagColor = DISCIPLINE_COLORS[attempt.activityId] ?? colors.primary;
+                        const tagColor = DISCIPLINE_COLORS[ACTIVITY_DATA[attempt.activityId].discipline] ?? colors.primary;
 
                         return (
                             <View
@@ -164,10 +164,10 @@ export default function History() {
 
                                 {/* score and rating row */}
                                 <View style={styles.statsRow}>
-                                    <View style={[styles.scoreBadge, { backgroundColor: colors.primary + '18' }]}>
+                                    <View style={[styles.scoreBadge, { backgroundColor: tagColor + '22' }]}>
                                         <Text style={[styles.scoreLabel, { color: colors.textSecondary }]}>Score</Text>
-                                        <Text style={[styles.scoreValue, { color: colors.primary }]}>
-                                            {attempt.score ?? 0}
+                                        <Text style={[styles.scoreValue, { color: tagColor }]}>
+                                            {FormatNumber(attempt.score) ?? 0}
                                         </Text>
                                     </View>
                                     <View style={styles.ratingBlock}>

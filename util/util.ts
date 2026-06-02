@@ -67,3 +67,13 @@ export function TimeStampToDateString(date: Timestamp): string {
         return `${date}`;
     }
 }
+
+export function FormatNumber(num: number){
+    if(num >= 1_000_000){
+        return `${Math.round(num/1_000_000*100)/100}m`
+    }
+    if(num >= 1000){
+        return `${Math.round(num/1000*100)/100}k`
+    }
+    return `${num}`
+}

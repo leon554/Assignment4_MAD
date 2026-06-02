@@ -27,48 +27,51 @@ export default function Activities() {
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
             >
-                {Object.values(ACTIVITY_DATA).map((activity) => (
-                    <TouchableOpacity
-                        key={activity.id}
-                        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                        onPress={() => router.push(`/activity/${activity.id}` as never)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Activity ${activity.id}: ${activity.title}`}
-                    >
-                        {/* activity number */}
-                        <View style={[styles.numberBadge, { backgroundColor: colors.primary }]}>
-                            <Text style={[styles.numberText, { color: colors.textOnPrimary }]}>
-                                {activity.id}
-                            </Text>
-                        </View>
-
-                        {/* content */}
-                        <View style={styles.cardContent}>
-                            <View style={styles.titleRow}>
-                                <Text style={[styles.activityTitle, { color: colors.textPrimary }]}>
-                                    {activity.title}
+                {Object.values(ACTIVITY_DATA).map((activity) => {
+                    const disciplineColor = DISCIPLINE_COLORS[activity.discipline]
+                    return(
+                        <TouchableOpacity
+                            key={activity.id}
+                            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                            onPress={() => router.push(`/activity/${activity.id}` as never)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Activity ${activity.id}: ${activity.title}`}
+                        >
+                            {/* activity number */}
+                            <View style={[styles.numberBadge, { backgroundColor: disciplineColor + '22'}]}>
+                                <Text style={[styles.numberText, { color: disciplineColor }]}>
+                                    {activity.id}
                                 </Text>
-                                <View style={[
-                                    styles.disciplineTag,
-                                    { backgroundColor: (DISCIPLINE_COLORS[activity.discipline] ?? colors.primary) + '22' }
-                                ]}>
-                                    <Text style={[
-                                        styles.disciplineText,
-                                        { color: DISCIPLINE_COLORS[activity.discipline] ?? colors.primary }
-                                    ]}>
-                                        {activity.discipline}
-                                    </Text>
-                                </View>
                             </View>
-                            <Text style={[styles.description, { color: colors.textSecondary }]}>
-                                {activity.overview}
-                            </Text>
-                        </View>
-
-                        {/* chevron */}
-                        <Text style={[styles.chevron, { color: colors.textDisabled }]}>›</Text>
-                    </TouchableOpacity>
-                ))}
+    
+                            {/* content */}
+                            <View style={styles.cardContent}>
+                                <View style={styles.titleRow}>
+                                    <Text style={[styles.activityTitle, { color: colors.textPrimary }]}>
+                                        {activity.title}
+                                    </Text>
+                                    <View style={[
+                                        styles.disciplineTag,
+                                        { backgroundColor: (disciplineColor ?? colors.primary) + '22' }
+                                    ]}>
+                                        <Text style={[
+                                            styles.disciplineText,
+                                            { color: disciplineColor ?? colors.primary }
+                                        ]}>
+                                            {activity.discipline}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Text style={[styles.description, { color: colors.textSecondary }]}>
+                                    {activity.overview}
+                                </Text>
+                            </View>
+    
+                            {/* chevron */}
+                            <Text style={[styles.chevron, { color: colors.textDisabled }]}>›</Text>
+                        </TouchableOpacity>
+                    )
+                })}
             </ScrollView>
         </View>
     );

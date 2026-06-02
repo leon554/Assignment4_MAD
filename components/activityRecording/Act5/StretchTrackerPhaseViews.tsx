@@ -1,4 +1,5 @@
 import { Colors } from "@/theme/theme";
+import { memo } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
 import {
@@ -15,7 +16,7 @@ interface SharedProps {
     colors: Colors;
 }
 
-export function MovementStepper({
+export const MovementStepper = memo(function MovementStepper({
     styles,
     currentMovement,
 }: {
@@ -45,9 +46,15 @@ export function MovementStepper({
             ))}
         </View>
     );
-}
+});
 
-export function RoundBadge({ styles, r }: { styles: SharedProps["styles"]; r: Round }) {
+export const RoundBadge = memo(function RoundBadge({
+    styles,
+    r,
+}: {
+    styles: SharedProps["styles"];
+    r: Round;
+}) {
     return (
         <View style={[styles.roundBadge, r === 2 && styles.roundBadge2]}>
             <Text style={styles.roundBadgeText}>
@@ -55,9 +62,9 @@ export function RoundBadge({ styles, r }: { styles: SharedProps["styles"]; r: Ro
             </Text>
         </View>
     );
-}
+});
 
-export function IdleView({
+export const IdleView = memo(function IdleView({
     styles,
     colors,
     onStartRound1,
@@ -103,9 +110,9 @@ export function IdleView({
             </Pressable>
         </>
     );
-}
+});
 
-export function RoundIntroView({
+export const RoundIntroView = memo(function RoundIntroView({
     styles,
     round,
     onBegin,
@@ -142,9 +149,9 @@ export function RoundIntroView({
             </Pressable>
         </>
     );
-}
+});
 
-export function CooldownView({
+export const CooldownView = memo(function CooldownView({
     styles,
     colors,
     round,
@@ -176,9 +183,9 @@ export function CooldownView({
             </Pressable>
         </>
     );
-}
+});
 
-export function RecordingView({
+export const RecordingView = memo(function RecordingView({
     styles,
     colors,
     round,
@@ -297,9 +304,9 @@ export function RecordingView({
             </Pressable>
         </>
     );
-}
+});
 
-export function BetweenRoundsView({
+export const BetweenRoundsView = memo(function BetweenRoundsView({
     styles,
     onStartRound2,
     onReset,
@@ -327,4 +334,4 @@ export function BetweenRoundsView({
             </Pressable>
         </>
     );
-}
+});

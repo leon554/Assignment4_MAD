@@ -7,7 +7,7 @@ import { getAllAcitivityAttempts } from '@/services/activityAttemptService';
 import { Colors } from '@/theme/theme';
 import { type ActivitySummary } from '@/types/activityTypes';
 import { ActivityAttempt } from '@/types/dbTypes';
-import { getActivitySummaries, getTeamRanking } from '@/util/util';
+import { FormatNumber, getActivitySummaries, getTeamRanking } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View, } from 'react-native';
@@ -102,7 +102,7 @@ export default function Home() {
                         {!teamRankingSummary ? (
                             <EmptyNode text="No ranking data yet." />
                         ) : (
-                            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                            <View style={[styles.card, { backgroundColor: colors.primary + '22', borderColor: colors.borderStrong }]}>
                                 <Text style={[styles.name, { color: colors.textPrimary, marginBottom: 12 }]}>
                                     {team?.teamName}
                                 </Text>
@@ -130,18 +130,20 @@ export default function Home() {
                     </Section>
 
                     <Section title="Activities" >
-                        {activitySummaries.map((a) => (
-                            <View key={a.id} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                                <Text style={[styles.name, { color: colors.textPrimary, marginBottom: 18 }]}>{a.title}</Text>
-                                <View style={styles.row}>
-                                    <LabeledNumber label="Attempts" value={String(a.attempts)}/>
-                                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                                    <LabeledNumber label="Team Best" value={String(a.topTeamScore)}/>
-                                     <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                                    <LabeledNumber label="World Best" value={String(a.topScore)}/>
+                        {activitySummaries.map((a) => {
+                            return(
+                                <View key={a.id} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                                    <Text style={[styles.name, { color: colors.textPrimary, marginBottom: 18 }]}>{a.title}</Text>
+                                    <View style={styles.row}>
+                                        <LabeledNumber label="Attempts" value={String(a.attempts)}/>
+                                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                                        <LabeledNumber label="Team Best" value={FormatNumber(a.topTeamScore)}/>
+                                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                                        <LabeledNumber label="World Best" value={FormatNumber(a.topScore)}/>
+                                    </View>
                                 </View>
-                            </View>
-                        ))}
+                            )
+                        })}
                     </Section>
 
                     <Section title="Team Members" >
