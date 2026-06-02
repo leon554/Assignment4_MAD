@@ -12,28 +12,22 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
-const BOX_W = 300;
-const BOX_H = 200;
-const CIRCLE_R = 20;
-const CX = BOX_W / 2;
-const CY = BOX_H / 2;
-const ELLIPSE_RX = CX - CIRCLE_R;
-const ELLIPSE_RY = CY - CIRCLE_R;
-const LOOP_MS = 3000;
-const SESSION_MS = 5000;
-const SAMPLE_MS = 50;
+const BoxWidth = 300;
+const BoxHeight = 200;
+const CircleRaduis = 20;
+const BoxCenterX = BoxWidth / 2;
+const BoxCenterY = BoxHeight / 2;
+const EllipseRaduisX = BoxCenterX - CircleRaduis;
+const EllipseRaduisY = BoxCenterY - CircleRaduis;
+const LoopMs = 3000;
+const SessionMs = 5000;
+const SampleInterval = 50;
 
 export type TracingStepProps = {
     onComplete?: (score: number) => void;
 };
 
-function perSampleScore(
-    fx: number,
-    fy: number,
-    cx: number,
-    cy: number,
-    r: number
-): number {
+function perSampleScore(fx: number, fy: number, cx: number, cy: number, r: number): number {
     const dx = fx - cx;
     const dy = fy - cy;
     const d = Math.hypot(dx, dy);
@@ -48,10 +42,10 @@ export function TracingStep({ onComplete }: TracingStepProps) {
     const fingerY = useSharedValue(0);
 
     const circleX = useDerivedValue(() => {
-        return CX + ELLIPSE_RX * Math.cos(progress.value * 2 * Math.PI);
+        return BoxCenterX + EllipseRaduisX * Math.cos(progress.value * 2 * Math.PI);
     });
     const circleY = useDerivedValue(() => {
-        return CY + ELLIPSE_RY * Math.sin(progress.value * 2 * Math.PI);
+        return BoxCenterY + EllipseRaduisY * Math.sin(progress.value * 2 * Math.PI);
     });
 
     const [displayScore, setDisplayScore] = useState<number | null>(null);
@@ -69,18 +63,18 @@ export function TracingStep({ onComplete }: TracingStepProps) {
 
     const clearTimers = useCallback(() => {
         if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
         }
         if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
         }
     }, []);
 
     useEffect(() => {
         progress.value = withRepeat(
-            withTiming(1, { duration: LOOP_MS }),
+            withTiming(1, { duration: LoopMs }),
             -1,
             false
         );
@@ -110,18 +104,18 @@ export function TracingStep({ onComplete }: TracingStepProps) {
         samplesRef.current = [];
 
         intervalRef.current = setInterval(() => {
-        const fx = fingerX.value;
-        const fy = fingerY.value;
-        const cx = circleX.value;
-        const cy = circleY.value;
-        samplesRef.current.push(
-            perSampleScore(fx, fy, cx, cy, CIRCLE_R)
-        );
-        }, SAMPLE_MS);
+            const fx = fingerX.value;
+            const fy = fingerY.value;
+            const cx = circleX.value;
+            const cy = circleY.value;
+            samplesRef.current.push(
+                perSampleScore(fx, fy, cx, cy, CircleRaduis)
+            );
+        }, SampleInterval);
 
         timeoutRef.current = setTimeout(() => {
             endSession();
-        }, SESSION_MS);
+        }, SessionMs);
     }, [fingerX, fingerY, circleX, circleY, endSession]);
 
     const reset = useCallback(() => {
@@ -158,8 +152,8 @@ export function TracingStep({ onComplete }: TracingStepProps) {
     const circleStyle = useAnimatedStyle(() => {
         return {
         transform: [
-            { translateX: circleX.value - CIRCLE_R },
-            { translateY: circleY.value - CIRCLE_R },
+            { translateX: circleX.value - CircleRaduis },
+            { translateY: circleY.value - CircleRaduis },
         ],
         };
     });
@@ -180,8 +174,8 @@ export function TracingStep({ onComplete }: TracingStepProps) {
             <Pressable
                 onPress={reset}
                 style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
+                    styles.button,
+                    pressed && styles.buttonPressed,
                 ]}
             >
                 <Text style={styles.buttonText}>Continue</Text>
@@ -198,8 +192,8 @@ const getStyles = (colors: Colors) => StyleSheet.create({
         marginTop: 40
     },
     box: {
-        width: BOX_W,
-        height: BOX_H,
+        width: BoxWidth,
+        height: BoxHeight,
         borderWidth: 2,
         borderColor: colors.border,
         backgroundColor: colors.surfaceRaised,
@@ -211,9 +205,9 @@ const getStyles = (colors: Colors) => StyleSheet.create({
         position: "absolute",
         left: 0,
         top: 0,
-        width: CIRCLE_R * 2,
-        height: CIRCLE_R * 2,
-        borderRadius: CIRCLE_R,
+        width: CircleRaduis * 2,
+        height: CircleRaduis * 2,
+        borderRadius: CircleRaduis,
         backgroundColor: colors.primary,
     },
     result: {

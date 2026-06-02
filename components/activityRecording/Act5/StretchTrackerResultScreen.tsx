@@ -1,21 +1,22 @@
-import { Colors } from "@/theme/theme";
+import { useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { MOVEMENT_LABELS, MOVEMENTS } from "./StretchTracker.constants";
 import { getStyles } from "./StretchTracker.styles";
 import { ResultScreenProps } from "./StretchTracker.types";
 
+type Styles = ReturnType<typeof getStyles>;
+
 function ResultStat({
     label,
     value,
     unit,
-    colors,
+    styles,
 }: {
     label: string;
     value: string;
     unit: string;
-    colors: Colors;
+    styles: Styles;
 }) {
-    const styles = getStyles(colors);
     return (
         <View style={styles.statBox}>
             <Text style={styles.statLabel}>{label}</Text>
@@ -30,7 +31,7 @@ export default function StretchTrackerResultScreen({
     colors,
     onReset,
 }: ResultScreenProps) {
-    const styles = getStyles(colors);
+    const styles = useMemo(() => getStyles(colors), [colors]);
     const rounds = [result.round1, result.round2];
     const improvements = MOVEMENTS.map((m) => {
         const r1 = result.round1.movements.find((mv) => mv.movement === m)!;
@@ -97,10 +98,10 @@ export default function StretchTrackerResultScreen({
                                 <Text style={styles.subTitle}>{m.label.split(":")[1]?.trim()}</Text>
                             </View>
                             <View style={styles.resultGrid}>
-                                <ResultStat label="Avg Speed" value={m.avgSpeed.toString()} unit="m/s²" colors={colors} />
-                                <ResultStat label="Avg Jerk" value={m.avgJerk.toString()} unit="m/s³" colors={colors} />
-                                <ResultStat label="Max Jerk" value={m.maxJerk.toString()} unit="m/s³" colors={colors} />
-                                <ResultStat label="Range" value={m.rangeOfMotion.toString()} unit="m/s²" colors={colors} />
+                                <ResultStat label="Avg Speed" value={m.avgSpeed.toString()} unit="m/s²" styles={styles} />
+                                <ResultStat label="Avg Jerk" value={m.avgJerk.toString()} unit="m/s³" styles={styles} />
+                                <ResultStat label="Max Jerk" value={m.maxJerk.toString()} unit="m/s³" styles={styles} />
+                                <ResultStat label="Range" value={m.rangeOfMotion.toString()} unit="m/s²" styles={styles} />
                             </View>
                             <View
                                 style={[

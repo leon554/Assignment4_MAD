@@ -4,6 +4,7 @@ import useColorPalette from '@/hooks/useColorPalette';
 import { getActivityAttemptsForActivity } from '@/services/activityAttemptService';
 import { Colors } from '@/theme/theme';
 import { ActivityAttempt } from '@/types/dbTypes';
+import { FormatNumber } from '@/util/util';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -261,7 +262,7 @@ export default function Leaderboard() {
                                         { color: colors.primary },
                                     ]}
                                 >
-                                    {entry.totalScore}
+                                    {FormatNumber(entry.totalScore)}
                                 </Text>
                             </View>
                         </View>

@@ -1,19 +1,13 @@
 import useColorPalette from "@/hooks/useColorPalette";
 import { Colors } from "@/theme/theme";
+import { Act7SessionResult, BreathingSample } from "@/types/activityTypes";
 import { Accelerometer } from "expo-sensors";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	Animated,
-	Dimensions,
-	Pressable,
-	ScrollView,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
+import { bpmLabel, estimateBreathsPerMinute, getBpmColor, lowPass } from "./Act7UtilFunctions";
+import { ResultScreen } from "./ResultScreen";
 
-// ─── Config ────────────────────────────────────────────────────────────────
 const SAMPLE_RATE_MS = 50;
 const WINDOW_SIZE = 400; // 20 seconds of data at 50ms
 const BREATH_FREQ_MIN = 0.15; // 9 BPM
@@ -25,80 +19,12 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const CHART_WIDTH = SCREEN_WIDTH - 80;
 const CHART_HEIGHT = 100;
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-interface Sample {
-	val: number;
-	timestamp: number;
-}
-
 type Phase = "idle" | "tracking" | "done";
-
-interface SessionResult {
-	avgBpm: number;
-	minBpm: number;
-	maxBpm: number;
-	readings: number[];
-}
-
-// ─── Utilities ───────────────────────────────────────────────────────────────
-function lowPass(prev: number, next: number, alpha: number): number {
-	return alpha * next + (1 - alpha) * prev;
-}
-
-function estimateBreathsPerMinute(samples: Sample[]): number | null {
-	if (samples.length < 40) return null;
-	const values = samples.map((s) => s.val);
-	const mean = values.reduce((a, b) => a + b, 0) / values.length;
-	const centred = values.map((v) => v - mean);
-
-	// Dynamic Hysteresis: Find the amplitude to filter out noise
-	const maxAmp = Math.max(...centred);
-	const minAmp = Math.min(...centred);
-	const amplitude = maxAmp - minAmp;
-
-	// If amplitude is tiny, they are holding their breath or the phone is on a table
-	if (amplitude < 0.005) return null;
-
-	const threshold = amplitude * 0.25; // Require a 25% swing to register a crossing
-	let crossings = 0;
-	let isPositive = centred[0] > 0;
-
-	for (let i = 1; i < centred.length; i++) {
-		if (isPositive && centred[i] < -threshold) {
-			crossings++;
-			isPositive = false;
-		} else if (!isPositive && centred[i] > threshold) {
-			crossings++;
-			isPositive = true;
-		}
-	}
-
-	const duration =
-		(samples[samples.length - 1].timestamp - samples[0].timestamp) / 1000;
-	if (duration === 0) return null;
-
-	const bpm = (crossings / 2 / duration) * 60;
-	if (bpm < BREATH_FREQ_MIN * 60 || bpm > BREATH_FREQ_MAX * 60) return null;
-	return Math.round(bpm);
-}
-
-function getBpmColor(bpm: number | null, colors: Colors): string {
-	if (bpm === null) return colors.textDisabled;
-	if (bpm < 12) return colors.destructive;
-	if (bpm <= 20) return colors.positive;
-	return colors.destructive;
-}
-
-function bpmLabel(bpm: number): string {
-	if (bpm < 12) return "Slow";
-	if (bpm <= 20) return "Normal";
-	return "Elevated";
-}
 
 interface Props {
 	onComplete: (bpm: number) => void
 }
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function BreathingTracker({onComplete} : Props) {
 	const colors = useColorPalette();
 	const styles = getStyles(colors);
@@ -106,11 +32,10 @@ export default function BreathingTracker({onComplete} : Props) {
 	const [phase, setPhase] = useState<Phase>("idle");
 	const [secondsLeft, setSecondsLeft] = useState(SESSION_SECONDS);
 	const [liveBpm, setLiveBpm] = useState<number | null>(null);
-	const [rawZ, setRawZ] = useState<number | null>(null);
-	const [result, setResult] = useState<SessionResult | null>(null);
+	const [result, setResult] = useState<Act7SessionResult | null>(null);
 	const [chartPoints, setChartPoints] = useState<string>("");
 
-	const bufferRef = useRef<Sample[]>([]);
+	const bufferRef = useRef<BreathingSample[]>([]);
 	const filteredZRef = useRef<number>(0);
 	const readingsRef = useRef<number[]>([]);
 	const subscriptionRef = useRef<ReturnType<typeof Accelerometer.addListener> | null>(null);
@@ -134,7 +59,6 @@ export default function BreathingTracker({onComplete} : Props) {
 				setPhase("idle");
 				setSecondsLeft(SESSION_SECONDS);
 				setLiveBpm(null);
-				setRawZ(null);
 				setChartPoints("");
 				progressAnim.setValue(1);
 			}
@@ -172,7 +96,6 @@ export default function BreathingTracker({onComplete} : Props) {
 		let isInitialized = false;
 
 		subscriptionRef.current = Accelerometer.addListener(({ z }) => {
-			setRawZ(parseFloat(z.toFixed(4)));
 			const now = Date.now();
 
 			if (!isInitialized) {
@@ -207,7 +130,7 @@ export default function BreathingTracker({onComplete} : Props) {
 
 			// Calculate BPM less frequently to save UI thread performance
 			if (bufferRef.current.length % 20 === 0) {
-				const est = estimateBreathsPerMinute(bufferRef.current);
+				const est = estimateBreathsPerMinute(bufferRef.current, BREATH_FREQ_MAX, BREATH_FREQ_MIN);
 				if (est !== null) {
 					setLiveBpm(est);
 					readingsRef.current.push(est);
@@ -340,33 +263,6 @@ export default function BreathingTracker({onComplete} : Props) {
 	);
 }
 
-// ─── Results Screen ────────────────────────────────────────────────────────────
-function ResultScreen({result, colors, onReset,}: {
-	result: SessionResult;
-	colors: Colors;
-	onReset: () => void;
-}) {
-	const styles = getStyles(colors);
-	const color = getBpmColor(result.avgBpm, colors);
-
-	return (
-		<ScrollView contentContainerStyle={styles.container}>
-			<Text style={styles.titleText}>Results</Text>
-			<View style={styles.sectionView}>
-				<Text style={styles.subTitle}>Average breathing rate</Text>
-				<Text style={[styles.bpmValue, { color }]}>{result.avgBpm}</Text>
-				<Text style={styles.subText}>breaths / min</Text>
-			</View>
-			<Pressable style={styles.buttonPrimary} onPress={onReset}>
-				<Text style={styles.buttonPrimaryText}>
-					Continue
-				</Text>
-			</Pressable>
-		</ScrollView>
-	);
-}
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const getStyles = (colors: Colors) => StyleSheet.create({
 	container: {
 		flexGrow: 1,
