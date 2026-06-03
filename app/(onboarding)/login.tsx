@@ -4,15 +4,7 @@ import { Colors } from '@/theme/theme';
 import { signInWithEmailAndPassword } from '@firebase/auth';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
 import Button from '../../components/Button';
 import TextInput from '../../components/TextInput';
 
@@ -41,7 +33,7 @@ export default function Login() {
         }
         return valid;
     };
-// simulating a login delay, when real authentication added later this will be replaced with API call
+
     const handleLogin = async () => {
         if (!validate()) return;
         setLoading(true);

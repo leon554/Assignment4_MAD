@@ -1,6 +1,5 @@
 import { ACTIVITY_DATA } from "@/activityData/activityData";
 import { ActivityAttempt, Team } from "@/types/dbTypes";
-import { Timestamp } from "firebase/firestore";
 
 export function roundToTwo(num: number): number {
     return Math.round((num + Number.EPSILON) * 100) / 100;
@@ -52,20 +51,6 @@ export function getActivitySummaries(team: Team | null, allActivityAttempts: Act
 export function isNumberBetweenOneAndFive(value: string): boolean {
     const num = Number(value);
     return Number.isInteger(num) && num >= 1 && num <= 5;
-}
-
-export function TimeStampToDateString(date: Timestamp): string {
-    try {
-        const timestamp = new Timestamp(date.seconds, date.nanoseconds)
-        const d = new Date(timestamp.toDate());
-        return d.toLocaleDateString('en-AU', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-        });
-    } catch(e ) {
-        return `${date}`;
-    }
 }
 
 export function FormatNumber(num: number){

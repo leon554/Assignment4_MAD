@@ -1,6 +1,3 @@
-// Unit Test 
-// Tests the rating validation logic from ActRatingComment
-
 import { isNumberBetweenOneAndFive } from "@/util/util";
 
 describe('Rating Validation', () => {

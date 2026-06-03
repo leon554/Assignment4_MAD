@@ -51,9 +51,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
                 if (memberData?.teamId) {
                     const teamData = await getTeam(memberData.teamId)
-
                     const teamMembersData = await getMembersByCodes(teamData.memberCodes)
-
                     setTeam(teamData);
                     setTeamMembers([...teamMembersData])
                 }
@@ -87,15 +85,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
         if(memberData?.teamId) {
             const teamData = await getTeam(memberData.teamId)
-
             const teamMembersData = await getMembersByCodes(teamData.memberCodes)
-
             setTeam(teamData);
             setTeamMembers([...teamMembersData])
         }else{
             setTeam(null);
         }
-
         setLoading(false)
     };
 

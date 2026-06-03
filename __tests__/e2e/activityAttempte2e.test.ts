@@ -22,6 +22,10 @@ jest.mock('firebase/firestore', () => ({
     collection: jest.fn(() => ({})),
     query: jest.fn(() => ({})),
     where: jest.fn(() => ({})),
+    Timestamp: {
+        fromDate: jest.fn((date) => ({ seconds: Math.floor(date.getTime() / 1000), nanoseconds: 0 })),
+        now: jest.fn(() => ({ seconds: 0, nanoseconds: 0 })),
+    },
 }));
 
 jest.mock('firebase/storage', () => ({
